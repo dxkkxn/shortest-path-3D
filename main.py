@@ -9,7 +9,7 @@ import sys
 from PIL import Image
 from math import cos, sin
 from copy import deepcopy
-from spa import dijkstra_sd
+from dijkstra import dijkstra_matrix_sorted_dict
 
 
 def display_grid():
@@ -56,8 +56,9 @@ GRID = None
 PATH = None
 D3 = False
 N = 20
-START = (3, 0)
-TARGET = (N-1, N-1)
+START = (0, N-1)
+TARGET = (N-1, 0)
+MOVE_WORM = 0
 
 def init():
     # clear color to black
@@ -96,13 +97,30 @@ def calcul_height(i, j):
 
 
 def calculate_sense(p1, p2):
-    x = p2[0]-p1[0]
-    y = p2[1]-p1[1]
-    if abs(x) == 1 and abs(y) == 1:
-        return "diagonal"
-    if y > 0 and x == 0:
-        return "horizontal"
-    return "vertical"
+    """
+    p1 --> p2
+    """
+    y = p2[0]-p1[0]
+    x = p2[1]-p1[1]
+    if x == -1 and y == -1:
+        return "rdiagonal down"
+    if x == 1 and y == 1:
+        return "rdiagonal up"
+    if x == -1  and y == 1:
+        return "ldiagonal down"
+    if x == -1  and y == 1:
+        return "ldiagonal down"
+    if x == 1  and y == -1:
+        return "ldiagonal down"
+    if y == 0 and x == -1:
+        return "horizontal left"
+    if y == 0 and x == 1:
+        return "horizontal right"
+    elif y == -1 and x == 0 :
+        return "vertical up"
+    elif y == 1 and x == 0:
+        return "vertical down"
+    raise TypeError
 
 
     return
@@ -204,6 +222,7 @@ def display():
                     glVertex3f(2*x+2, ij_plus1_y, 2*z+2)
                     glEnd()
     if PATH:
+        pts = []
         glBegin(GL_LINES)
         for i in range(1, len(PATH)) :
             sz, sx = PATH[i-1]
@@ -214,27 +233,90 @@ def display():
                 y_s = (GRID[sz][sx])/255 *10 + .5
                 y_d = (GRID[dz][dx])/255 * 10 + .5
             glColor3f (1.0, 0.0, 0.0);
-            glVertex3f(2*sx+0.5, y_s, 2*sz+0.5);
-            if sense == "horizontal":
-                glVertex3f(2*sx+1, y_s, 2*sz+0.5);
-                glVertex3f(2*sx+1, y_s, 2*sz+0.5);
-                glVertex3f(2*dx, y_d, 2*dz+0.5);
-                glVertex3f(2*dx, y_d, 2*dz+0.5);
-            elif sense =="vertical":
-                glVertex3f(2*sx+0.5, y_s, 2*sz+1);
-                glVertex3f(2*sx+0.5, y_s, 2*sz+1);
-                glVertex3f(2*dx+0.5, y_d, 2*dz);
-                glVertex3f(2*dx+0.5, y_d, 2*dz);
+            glVertex3f(2*sx+0.5, y_s, 2*sz+0.5)
+            pts.append((2*sx+0.5, y_s, 2*sz+0.5))
+            print(sense)
+            if sense == "horizontal left":
+                glVertex3f(2*sx, y_s, 2*sz+0.5)
+                glVertex3f(2*sx, y_s, 2*sz+0.5)
+                glVertex3f(2*dx+1, y_d, 2*dz+0.5)
+                glVertex3f(2*dx+1, y_d, 2*dz+0.5)
+                pts.append((2*sx, y_s, 2*sz+0.5))
+                pts.append((2*dx+1, y_d, 2*dz+0.5))
+            if sense == "horizontal right":
+                glVertex3f(2*sx+1, y_s, 2*sz+0.5)
+                glVertex3f(2*sx+1, y_s, 2*sz+0.5)
+                glVertex3f(2*dx, y_d, 2*dz+0.5)
+                glVertex3f(2*dx, y_d, 2*dz+0.5)
+                pts.append((2*sx+1, y_s, 2*sz+0.5))
+                pts.append((2*dx, y_d, 2*dz+0.5))
+            elif sense =="vertical down":
+                glVertex3f(2*sx+0.5, y_s, 2*sz+1)
+                glVertex3f(2*sx+0.5, y_s, 2*sz+1)
+                glVertex3f(2*dx+0.5, y_d, 2*dz)
+                glVertex3f(2*dx+0.5, y_d, 2*dz)
+                pts.append((2*sx+0.5, y_s, 2*sz+1))
+                pts.append((2*dx+0.5, y_d, 2*dz))
+            elif sense =="vertical up":
+                glVertex3f(2*sx+0.5, y_s, 2*sz)
+                glVertex3f(2*sx+0.5, y_s, 2*sz)
+                glVertex3f(2*dx+0.5, y_d, 2*dz+1)
+                glVertex3f(2*dx+0.5, y_d, 2*dz+1)
+                pts.append((2*sx+0.5, y_s, 2*sz))
+                pts.append((2*dx+0.5, y_d, 2*dz+1))
+            elif sense =="ldiagonal down":
+                glVertex3f(2*sx, y_s, 2*sz+1)
+                glVertex3f(2*sx, y_s, 2*sz+1)
+                i, j = PATH[i-1]
+                left_h = calcul_height(i, j-1)
+                down_h = calcul_height(i+1, j)
+                mid_p_h = ((2*sx-1 + 2*sx)/2,(left_h+down_h)/2, (2*sz+2 + 2*sz+1)/2)
+                glVertex3f(*mid_p_h)
+                glVertex3f(*mid_p_h)
+                glVertex3f(2*dx+1, y_d, 2*dz)
+                glVertex3f(2*dx+1, y_d, 2*dz)
+                pts.append((2*sx, y_s, 2*sz+1))
+                pts.append(mid_p_h)
+                pts.append((2*dx+1, y_d, 2*dz))
+            elif sense =="ldiagonal up":
+                glVertex3f(2*sx+1, y_s, 2*sz)
+                glVertex3f(2*sx+1, y_s, 2*sz)
+                glVertex3f(2*dx, y_d, 2*dz+1)
+                glVertex3f(2*dx, y_d, 2*dz+1)
+                pts.append((2*sx+1, y_s, 2*sz))
+                pts.append((2*dx, y_d, 2*dz+1))
+            elif sense =="rdiagonal down":
+                glVertex3f(2*sx+1, y_s, 2*sz+1)
+                glVertex3f(2*sx+1, y_s, 2*sz+1)
+                glVertex3f(2*dx, y_d, 2*dz)
+                glVertex3f(2*dx, y_d, 2*dz)
+                pts.append((2*sx+1, y_s, 2*sz+1))
+                pts.append((2*dx, y_d, 2*dz))
+            elif sense =="rdiagonal up":
+                glVertex3f(2*sx, y_s, 2*sz)
+                glVertex3f(2*sx, y_s, 2*sz)
+                glVertex3f(2*dx+1, y_d, 2*dz+1)
+                glVertex3f(2*dx+1, y_d, 2*dz+1)
+                pts.append((2*sx, y_d, 2*sz))
+                pts.append((2*dx+1, y_d, 2*dz+1))
             else:
-                assert(sense =="diagonal")
-                glVertex3f(2*sx+1, y_s, 2*sz+1);
-                glVertex3f(2*sx+1, y_s, 2*sz+1);
-                glVertex3f(2*dx, y_d, 2*dz);
-                glVertex3f(2*dx, y_d, 2*dz);
-
+                print(sense)
+                # glVertex3f(2*sx, y_s, 2*sz+1)
+                # glVertex3f(2*sx, y_s, 2*sz+1)
+                # glVertex3f(2*dx+1, y_d, 2*dz)
+                # glVertex3f(2*dx+1, y_d, 2*dz)
+                # pts.append((2*sx, y_s, 2*sz+1))
+                # pts.append((2*dx+1, y_d, 2*dz+1))
             glVertex3f(2*dx+0.5, y_d, 2*dz+0.5);
         glEnd()
 
+        glColor(0.0, 1.0, 1.0)
+        sph1 = gluNewQuadric()
+        glTranslatef(*pts[MOVE_WORM%len(pts)])
+        gluQuadricDrawStyle(sph1, GLU_FILL)
+        gluQuadricNormals(sph1, GLU_SMOOTH)
+        gluQuadricTexture(sph1, GL_TRUE)
+        gluSphere(sph1, 0.4, 100, 80)
     glPopMatrix()
     glutSwapBuffers()
     return
@@ -250,7 +332,7 @@ def reshape(width, height):
 
 
 def keyboard(key, x, y):
-    global x_pos, y_pos, z_pos, DISPLAY_GRID, PATH, D3
+    global x_pos, y_pos, z_pos, DISPLAY_GRID, PATH, D3, MOVE_WORM
     if key == b'g':
         DISPLAY_GRID = not DISPLAY_GRID
     elif key == b'3':
@@ -258,7 +340,7 @@ def keyboard(key, x, y):
     elif key == b'p':
         for line in GRID:
             print(line)
-        PATH = dijkstra_sd(GRID, START, TARGET)
+        PATH = dijkstra_matrix_sorted_dict(GRID, START, TARGET)
     elif key == b'w':
         y_pos -= 1
     elif key == b's':
@@ -271,6 +353,8 @@ def keyboard(key, x, y):
         x_pos -= 1
     elif key == b'l':
         x_pos += 1
+    elif key == b'm':
+        MOVE_WORM += 1
     elif key == b'\033':
         glutDestroyWindow(WIN)
         sys.exit(0)
@@ -324,9 +408,10 @@ def init_random_grid(n):
     grid = [[random.randint(0, 255) for x in range(n)] for x in range(n)]
     grid = median_smooth(grid)
     # grid = smooth(grid)
-    rd_line, rd_col = random.randint(0, n), random.randint(0, n)
+    rd_line, rd_col = random.randint(0, n-1), random.randint(0, n-1)
+    while rd_line !=TARGET[0] and rd_line ==START[0] :
+        rd_line, rd_col = random.randint(0, n-1), random.randint(0, n-1)
     for j in range(n):
-        print(rd_line, j)
         grid[rd_line][j] = float('inf')
     grid[rd_line][rd_col] = random.randint(0, 255)
     GRID = grid
