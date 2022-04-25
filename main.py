@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from OpenGL.GL import *  # car prefixe systematique
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
@@ -7,46 +5,36 @@ import random
 import sys
 # from Image import open
 from PIL import Image
-from math import cos, sin
+from math import cos, sin, sqrt
 from copy import deepcopy
 from dijkstra import dijkstra_matrix_sorted_dict
+from linear_algebra import LineSegment, Vector, Point
 
-class Vector(object):
-    def __init__(self, x_coord, y_coord, z_coord):
-        self.x = x_coord
-        self.y = y_coord
-        self.z = z_coord
-    def __sub__(self, v1):
-        return Vector(self.x-v1.x, self.y-v1.y, self.z-v1.z)
-    def __str__(self):
-        return f"({self.x}, {self.y}, {self.z})"
-    def to_tuple(self):
-        return self.x, self.y, self.z
-    def __xor__(self, v):
-        return Vector(self.y*v.z - self.z*v.y,
-                      self.z*v.x - self.x*v.z,
-                      self.x*v.y - self.y*v.x)
-class Point(object):
-    def __init__(self, x_coord, y_coord, z_coord):
-        self.x = x_coord
-        self.y = y_coord
-        self.z = z_coord
-    def to_tuple(self):
-        return self.x, self.y, self.z
-    def __sub__(self, point):
-        return Point(self.x-point.x, self.y-point.y, self.z-point.z)
-    def __add__(self, point):
-        return Point(self.x+point.x, self.y+point.y, self.z+point.z)
+INF = float('inf')
 
-class LineSegment(object):
-    def __init__(self, point_a: Point, point_b : Point):
-        self.a = point_a
-        self.b = point_b
-    def mid_point(self):
-        sum_ = self.a + self.b
-        return Point(sum_.x/2, sum_.y/2, sum_.z/2)
+
+def barycenter_calculation(a: Point, b: Point, c: Point):
+    """Calcul le barycentre d'un triangle."""
+    v_a = Vector(Point(*a.to_tuple()))
+    v_b = Vector(Point(*b.to_tuple()))
+    v_c = Vector(Point(*c.to_tuple()))
+    sum_ = v_a + v_b + v_c
+    return Point(sum_.x/3, sum_.y/3, sum_.z/3)
+
+
+def rescale_normal(nv: Vector, norm: int):
+    """Renvoie le point pour que le vector aie une norme norm."""
+    scale = sqrt(norm/(nv.x**2+nv.y**2+nv.z**2))
+    return Point(scale*nv.x, scale*nv.y, scale*nv.z)
+
 
 def display_grid():
+    """
+    Affichage de la grille.
+
+    Affiche un grille pour un meilleur comprehension
+    du mouvement de la camera.
+    """
     glBegin(GL_LINES);
 
     n = 90
@@ -100,7 +88,7 @@ def init():
     glClearColor(0.0, 0.0, 0.0, 0.0)
     diffuse = [0.7, 0.7, 0.7, 1.0]
     specular = [0.001, 0.001, 0.001, 1.0]
-    pos = [1, 50, 1, 1]
+    pos = [1, 50, 50, 1]
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_BLEND)
     glDepthFunc(GL_LESS)
@@ -120,13 +108,13 @@ def init():
 
 def calculate_color(i, j):
     color = (GRID[i][j])/255
-    if color ==float('inf'):
-        color = 0.0
+    if color == INF:
+         color = .0
     return color
 
 def calculate_height(i, j):
     y = (GRID[i][j])/255 * 10
-    if y == float('inf'):
+    if y == INF:
         y = 0
     return y
 
@@ -181,6 +169,7 @@ def display():
             # main square draw
             glBegin(GL_POLYGON)
             color = calculate_color(i, j)
+
             glNormal3f(0.0, 1.0, 0.0)
             # glColor3f(color, color, color)
             glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
@@ -190,10 +179,19 @@ def display():
             glVertex3f(2*x, y, 2*z+1)
             glEnd()
             if NORMALS:
+                glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
+                a_, b_, c_ = (2*x+.5, y, 2*z+.5)
+                glTranslatef(a_, b_, c_)
+                gluSphere(sph1, 0.1, 5, 5)
+                glTranslatef(-a_, -b_, -c_)
+
                 glBegin(GL_LINES)
                 glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1,0,0,1])
+                normal = Vector(Point(0, 1, 0))
+                glNormal(*normal.to_tuple())
                 glVertex(2*x+.5, y, 2*z+.5)
-                glVertex(2*x+.5, y+1, 2*z+.5)
+                a, b, c = rescale_normal(normal, 0.5).to_tuple()
+                glVertex3f(a_+a, b_+b, c_+c)
                 glEnd()
 
             # draw of horizontal rectangles
@@ -207,9 +205,9 @@ def display():
                 color = calculate_color(i, j)
                 glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
 
-                v0 = Vector(2*x+1, y, 2*z)
-                v1 = Vector(2*x+2, j_plus1_y, 2*z)
-                v2 = Vector(2*x+1, y, 2*z+1)
+                v0 = Vector(Point(2*x+1, y, 2*z))
+                v1 = Vector(Point(2*x+2, j_plus1_y, 2*z))
+                v2 = Vector(Point(2*x+1, y, 2*z+1))
                 v1 = v1-v0
                 v2 = v2-v0
                 normal = v2 ^ v1
@@ -217,22 +215,28 @@ def display():
                 glVertex3f(2*x+1, y, 2*z)
                 glVertex3f(2*x+1, y, 2*z+1)
                 color = calculate_color(i, j+1)
+
                 glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
                 # glColor3f(color, color, color)
                 glVertex3f(2*x+2, j_plus1_y, 2*z+1)
                 glVertex3f(2*x+2, j_plus1_y, 2*z)
-                glNormal3f(0,1,0)
                 glEnd()
                 if NORMALS:
-                    glBegin(GL_LINES)
                     a = Point(2*x+1, y, 2*z)
                     b = Point(2*x+2, j_plus1_y, 2*z+1)
                     seg = LineSegment(a,b)
-                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
                     a_, b_, c_ = seg.mid_point().to_tuple()
+                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
+                    glTranslatef(a_, b_, c_)
+                    gluSphere(sph1, 0.1, 5, 5)
+                    glTranslatef(-a_, -b_, -c_)
+
+                    glBegin(GL_LINES)
+                    glNormal3f(0,1,0)
+                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
                     glVertex3f(a_, b_, c_)
-                    a, b, c = normal.to_tuple()
-                    glVertex3f(a_+a/2, b_+b/2, c_+c/2)
+                    a, b, c = rescale_normal(normal, 0.5).to_tuple()
+                    glVertex3f(a_+a, b_+b, c_+c)
                     glEnd()
 
             #draw of vertical rectangles
@@ -241,36 +245,43 @@ def display():
                 if D3:
                     i_plus1_y = calculate_height(i+1, j)
                 glBegin(GL_POLYGON)
-                v0 = Vector(2*x, y, 2*z+1)
-                v1 = Vector(2*x+1, y, 2*z+1)
-                v2 = Vector(2*x, i_plus1_y, 2*z+2)
+                v0 = Vector(Point(2*x, y, 2*z+1))
+                v1 = Vector(Point(2*x+1, y, 2*z+1))
+                v2 = Vector(Point(2*x, i_plus1_y, 2*z+2))
                 v1 = v1-v0
                 v2 = v2-v0
                 normal = v2 ^ v1
                 glNormal3f(*normal.to_tuple())
                 color = calculate_color(i, j)
+
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
                 glVertex3f(2*x, y, 2*z+1)
                 glVertex3f(2*x+1, y, 2*z+1)
                 color = calculate_color(i+1, j)
+
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
                 glVertex3f(2*x+1, i_plus1_y, 2*z+2)
                 glVertex3f(2*x, i_plus1_y, 2*z+2)
                 glNormal3f(0,1,0)
                 glEnd()
                 if NORMALS:
-                    glBegin(GL_LINES)
                     a = Point(2*x, y, 2*z+1)
-                    b = Point(2*x+1, j_plus1_y, 2*z+2)
-                    seg = LineSegment(b,a)
-                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
+                    b = Point(2*x+1, i_plus1_y, 2*z+2)
+                    seg = LineSegment(a,b)
                     a_, b_, c_ = seg.mid_point().to_tuple()
+                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
+                    glTranslatef(a_, b_, c_)
+                    gluSphere(sph1, 0.1, 5, 5)
+                    glTranslatef(-a_, -b_, -c_)
+
+                    glBegin(GL_LINES)
+                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
                     glVertex3f(a_, b_, c_)
-                    a, b, c = normal.to_tuple()
+                    a, b, c = rescale_normal(normal, 0.5).to_tuple()
                     glVertex3f(a_+a, b_+b, c_+c)
                     glEnd()
 
-            #draw of inner triangles
+            # draw of inner triangles
             if i+1 < len(GRID) and j+1<len(GRID[0]):
                 ij_plus1_y = 0
                 i_plus1_y = 0
@@ -281,64 +292,89 @@ def display():
                     j_plus1_y = calculate_height(i, j+1)
 
                 glBegin(GL_POLYGON)
-                v0 = Vector(2*x+1, y, 2*z+1)
-                v1 = Vector(2*x+2, ij_plus1_y, 2*z+2)
-                v2 = Vector(2*x+1, i_plus1_y, 2*z+2)
+                v0 = Vector(Point(2*x+1, y, 2*z+1))
+                v1 = Vector(Point(2*x+2, ij_plus1_y, 2*z+2))
+                v2 = Vector(Point(2*x+1, i_plus1_y, 2*z+2))
                 v1 = v1-v0
                 v2 = v2-v0
                 normal = v2 ^ v1
                 glNormal3f(*normal.to_tuple())
                 color = calculate_color(i, j)
+
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
                 glVertex3f(2*x+1, y, 2*z+1)
 
                 color = calculate_color(i+1, j)
+
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
                 glVertex3f(2*x+1, i_plus1_y, 2*z+2)
 
                 color = calculate_color(i+1, j+1)
+
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
                 glVertex3f(2*x+2, ij_plus1_y, 2*z+2)
 
                 glNormal3f(0,1,0)
                 glEnd()
                 if NORMALS:
+                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
+                    barycenter = barycenter_calculation(Point(2*x+1, y, 2*z+1),
+                                                        Point(2*x+2, ij_plus1_y, 2*z+2),
+                                                        Point(2*x+1, i_plus1_y, 2*z+2))
+                    bx, by, bz = (barycenter.to_tuple())
+                    a_, b_, c_ = (barycenter.to_tuple())
+                    glTranslatef(bx, by, bz)
+                    gluSphere(sph1, 0.1, 5, 5)
+                    glTranslatef(-bx, -by, -bz)
+
                     glBegin(GL_LINES)
-                    # a = Point(2*x, y, 2*z+1)
-                    # b = Point(2*x+1, j_plus1_y, 2*z+2)
-                    # seg = LineSegment(b,a)
-                    # glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
-                    # a_, b_, c_ = seg.mid_point().to_tuple()
-                    a_, b_, c_ = (2*x+1, y, 2*z+1)
+                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
+                    new_normal = Vector(rescale_normal(normal, 0.5))
                     glVertex3f(a_, b_, c_)
-                    a, b, c = normal.to_tuple()
-                    glVertex3f(a_+a, b_+b, c_+c)
+                    a, b, c = new_normal.translate(barycenter).to_tuple()
+                    glVertex3f(a, b, c)
                     glEnd()
 
 
                 glBegin(GL_POLYGON)
-                v0 = Vector(2*x+1, y, 2*z+1)
-                v1 = Vector(2*x+2, j_plus1_y, 2*z+1)
-                v2 = Vector(2*x+2, ij_plus1_y, 2*z+2)
+                v0 = Vector(Point(2*x+1, y, 2*z+1))
+                v1 = Vector(Point(2*x+2, j_plus1_y, 2*z+1))
+                v2 = Vector(Point(2*x+2, ij_plus1_y, 2*z+2))
                 v1 = v1-v0
                 v2 = v2-v0
                 normal = v2 ^ v1
                 glNormal3f(*normal.to_tuple())
                 color = calculate_color(i, j)
-                # glColor3f(color, color, color)
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
                 glVertex3f(2*x+1, y, 2*z+1)
 
                 color = calculate_color(i, j+1)
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
-                # glColor3f(color, color, color)
                 glVertex3f(2*x+2, j_plus1_y, 2*z+1)
 
                 color = calculate_color(i+1, j+1)
                 glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
-                # glColor3f(color, color, color)
                 glVertex3f(2*x+2, ij_plus1_y, 2*z+2)
                 glEnd()
+                if NORMALS:
+                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
+                    barycenter = barycenter_calculation(Point(2*x+1, y, 2*z+1),
+                                                        Point(2*x+2, j_plus1_y, 2*z+1),
+                                                        Point(2*x+2, ij_plus1_y, 2*z+2))
+                    bx, by, bz = (barycenter.to_tuple())
+                    a_, b_, c_ = (barycenter.to_tuple())
+                    glTranslatef(bx, by, bz)
+                    gluSphere(sph1, 0.1, 5, 5)
+                    glTranslatef(-bx, -by, -bz)
+
+                    glBegin(GL_LINES)
+                    new_normal = Vector(rescale_normal(normal, 0.5))
+                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
+                    glVertex3f(a_, b_, c_)
+                    a, b, c = new_normal.translate(barycenter).to_tuple()
+                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
+                    glVertex3f(a, b, c)
+                    glEnd()
     if PATH:
         pts = []
         glBegin(GL_LINES)
@@ -537,7 +573,7 @@ def init_random_grid(n):
     while rd_line !=TARGET[0] and rd_line ==START[0] :
         rd_line, rd_col = random.randint(0, n-1), random.randint(0, n-1)
     for j in range(n):
-        grid[rd_line][j] = float('inf')
+        grid[rd_line][j] = INF
     grid[rd_line][rd_col] = random.randint(0, 255)
     GRID = grid
     return
