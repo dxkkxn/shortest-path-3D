@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Objets pour faire des operations en algebre linaire."""
 
+
 class Point(object):
     """Class pour representer un point."""
 
@@ -17,6 +18,7 @@ class Point(object):
     def to_tuple(self):
         """Renvoi le vector en forme de tuple."""
         return self.x, self.y, self.z
+
 
 class Vector(object):
     """Class pour representer un vecteur et ses operations."""

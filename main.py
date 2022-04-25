@@ -4,8 +4,8 @@ from OpenGL.GLUT import *
 import random
 import sys
 # from Image import open
-from PIL import Image
-from math import cos, sin, sqrt
+# from PIL import Image
+# from math import cos, sin, sqrt
 from copy import deepcopy
 from dijkstra import dijkstra_matrix_sorted_dict
 from linear_algebra import LineSegment, Vector, Point
@@ -19,13 +19,13 @@ def barycenter_calculation(a: Point, b: Point, c: Point):
     v_b = Vector(Point(*b.to_tuple()))
     v_c = Vector(Point(*c.to_tuple()))
     sum_ = v_a + v_b + v_c
-    return Point(sum_.x/3, sum_.y/3, sum_.z/3)
+    return Point(sum_.x / 3, sum_.y / 3, sum_.z / 3)
 
 
 def rescale_normal(nv: Vector, norm: int):
     """Renvoie le point pour que le vector aie une norme norm."""
-    scale = sqrt(norm/(nv.x**2+nv.y**2+nv.z**2))
-    return Point(scale*nv.x, scale*nv.y, scale*nv.z)
+    scale = sqrt(norm / (nv.x**2 + nv.y**2 + nv.z**2))
+    return Point(scale * nv.x, scale * nv.y, scale * nv.z)
 
 
 def display_grid():
@@ -40,31 +40,31 @@ def display_grid():
     n = 90
     for i in range(-n, n):
         # x, y
-        glColor3f (1.0, 1.0, 1.0);
-        glVertex3f(i, -n, 0.0);
-        glVertex3f(i, n, 0.0);
+        glColor3f(1.0, 1.0, 1.0)
+        glVertex3f(i, -n, 0.0)
+        glVertex3f(i, n, 0.0)
 
-        glColor3f (1.0, 1.0, 1.0);
-        glVertex3f(-n, i, 0.0);
-        glVertex3f(n, i, 0.0);
+        glColor3f(1.0, 1.0, 1.0)
+        glVertex3f(-n, i, 0.0)
+        glVertex3f(n, i, 0.0)
 
         #x, z
-        glColor3f (1.0, 1.0, 1.0);
-        glVertex3f(i, 0.0, -n);
-        glVertex3f(i, 0.0, n);
+        glColor3f(1.0, 1.0, 1.0)
+        glVertex3f(i, 0.0, -n)
+        glVertex3f(i, 0.0, n)
 
-        glColor3f (1.0, 1.0, 1.0);
-        glVertex3f(-n, 0.0, i);
-        glVertex3f(n, 0.0, i);
+        glColor3f(1.0, 1.0, 1.0)
+        glVertex3f(-n, 0.0, i)
+        glVertex3f(n, 0.0, i)
 
         #y, z
-        glColor3f (1.0, 1.0, 1.0);
-        glVertex3f(0.0, i, -n);
-        glVertex3f(0.0, i, n);
+        glColor3f(1.0, 1.0, 1.0)
+        glVertex3f(0.0, i, -n)
+        glVertex3f(0.0, i, n)
 
-        glColor3f (1.0, 1.0, 1.0);
-        glVertex3f(0.0, -n, i);
-        glVertex3f(0.0, n, i);
+        glColor3f(1.0, 1.0, 1.0)
+        glVertex3f(0.0, -n, i)
+        glVertex3f(0.0, n, i)
 
     glEnd()
     return
@@ -78,16 +78,18 @@ GRID = None
 PATH = None
 D3 = False
 N = 20
-START = (0, N-1)
-TARGET = (N-1, 0)
+START = (0, N - 1)
+TARGET = (N - 1, 0)
 MOVE_WORM = 0
 NORMALS = False
 
+
 def init():
+    """Initialisation des variables et lumiere openGL."""
     # clear color to black
     glClearColor(0.0, 0.0, 0.0, 0.0)
-    diffuse = [0.7, 0.7, 0.7, 1.0]
-    specular = [0.001, 0.001, 0.001, 1.0]
+    # diffuse = [0.7, 0.7, 0.7, 1.0]
+    # specular = [0.001, 0.001, 0.001, 1.0]
     pos = [1, 50, 50, 1]
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_BLEND)
@@ -106,33 +108,36 @@ def init():
     init_random_grid(N)
     return
 
+
 def calculate_color(i, j):
-    color = (GRID[i][j])/255
+    """Calcul du color selon la coordonnee (i,j)."""
+    color = GRID[i][j] / 255
     if color == INF:
-         color = .0
+        color = .0
     return color
 
+
 def calculate_height(i, j):
-    y = (GRID[i][j])/255 * 10
+    """Calcul du hauteur selon la coordonnee (i,j)."""
+    y = GRID[i][j] / 255 * 10
     if y == INF:
         y = 0
     return y
 
+
 def calculate_sense(p1, p2):
-    """
-    p1 --> p2
-    """
-    y = p2[0]-p1[0]
-    x = p2[1]-p1[1]
+    """Pp1 --> p2."""
+    y = p2[0] - p1[0]
+    x = p2[1] - p1[1]
     if x == -1 and y == -1:
         return "rdiagonal down"
     if x == 1 and y == 1:
         return "rdiagonal up"
-    if x == -1  and y == 1:
+    if x == -1 and y == 1:
         return "ldiagonal down"
-    if x == -1  and y == 1:
+    if x == -1 and y == 1:
         return "ldiagonal down"
-    if x == 1  and y == -1:
+    if x == 1 and y == -1:
         return "ldiagonal down"
     if y == 0 and x == -1:
         return "horizontal left"
@@ -143,16 +148,14 @@ def calculate_sense(p1, p2):
     elif y == 1 and x == 0:
         return "vertical down"
     raise TypeError
-
-
-    return
+    return None
 
 def display():
-    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glPushMatrix()
-    gluLookAt(x_pos, y_pos, z_pos, #pos camera
-              0+x_pos, -10+y_pos, -10+z_pos, # look at
-              0, 1, 0) #up vector
+    gluLookAt(x_pos, y_pos, z_pos,  # pos camera
+              x_pos, -10 + y_pos, -10 + z_pos,  # look at
+              0, 1, 0)  # up vector
     sph1 = gluNewQuadric()
 
     if DISPLAY_GRID :
@@ -173,29 +176,29 @@ def display():
             glNormal3f(0.0, 1.0, 0.0)
             # glColor3f(color, color, color)
             glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
-            glVertex3f(2*x, y, 2*z)
-            glVertex3f(2*x+1, y, 2*z)
-            glVertex3f(2*x+1, y, 2*z+1)
-            glVertex3f(2*x, y, 2*z+1)
+            glVertex3f(2 * x, y, 2 * z)
+            glVertex3f(2 * x + 1, y, 2 * z)
+            glVertex3f(2 * x + 1, y, 2 * z + 1)
+            glVertex3f(2 * x, y, 2 * z + 1)
             glEnd()
             if NORMALS:
-                glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
-                a_, b_, c_ = (2*x+.5, y, 2*z+.5)
+                glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0, 0, 1])
+                a_, b_, c_ = (2 * x + .5, y, 2 * z + .5)
                 glTranslatef(a_, b_, c_)
                 gluSphere(sph1, 0.1, 5, 5)
                 glTranslatef(-a_, -b_, -c_)
 
                 glBegin(GL_LINES)
-                glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1,0,0,1])
+                glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0, 0, 1])
                 normal = Vector(Point(0, 1, 0))
                 glNormal(*normal.to_tuple())
-                glVertex(2*x+.5, y, 2*z+.5)
+                glVertex(2 * x + .5, y, 2 * z + .5)
                 a, b, c = rescale_normal(normal, 0.5).to_tuple()
-                glVertex3f(a_+a, b_+b, c_+c)
+                glVertex3f(a_ + a, b_ + b, c_ + c)
                 glEnd()
 
             # draw of horizontal rectangles
-            if j+1 < len(GRID[0]):
+            if j + 1 < len(GRID[0]):
                 i_plus1_y = 0
                 j_plus1_y = 0
                 if D3:
@@ -203,118 +206,123 @@ def display():
 
                 glBegin(GL_POLYGON)
                 color = calculate_color(i, j)
-                glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
+                glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE,
+                             [color, color, color, 1])
 
-                v0 = Vector(Point(2*x+1, y, 2*z))
-                v1 = Vector(Point(2*x+2, j_plus1_y, 2*z))
-                v2 = Vector(Point(2*x+1, y, 2*z+1))
-                v1 = v1-v0
-                v2 = v2-v0
+                v0 = Vector(Point(2 * x + 1, y, 2 * z))
+                v1 = Vector(Point(2 * x + 2, j_plus1_y, 2 * z))
+                v2 = Vector(Point(2 * x + 1, y, 2 * z + 1))
+                v1 = v1 - v0
+                v2 = v2 - v0
                 normal = v2 ^ v1
                 glNormal3f(*normal.to_tuple())
-                glVertex3f(2*x+1, y, 2*z)
-                glVertex3f(2*x+1, y, 2*z+1)
-                color = calculate_color(i, j+1)
+                glVertex3f(2 * x + 1, y, 2 * z)
+                glVertex3f(2 * x + 1, y, 2 * z + 1)
+                color = calculate_color(i, j + 1)
 
-                glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
-                # glColor3f(color, color, color)
-                glVertex3f(2*x+2, j_plus1_y, 2*z+1)
-                glVertex3f(2*x+2, j_plus1_y, 2*z)
+                glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE,
+                             [color, color, color, 1])
+                glVertex3f(2 * x + 2, j_plus1_y, 2 * z + 1)
+                glVertex3f(2 * x + 2, j_plus1_y, 2 * z)
                 glEnd()
                 if NORMALS:
-                    a = Point(2*x+1, y, 2*z)
-                    b = Point(2*x+2, j_plus1_y, 2*z+1)
-                    seg = LineSegment(a,b)
+                    a = Point(2 * x + 1, y, 2 * z)
+                    b = Point(2 * x + 2, j_plus1_y, 2 * z + 1)
+                    seg = LineSegment(a, b)
                     a_, b_, c_ = seg.mid_point().to_tuple()
-                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
+                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0, 0, 1])
                     glTranslatef(a_, b_, c_)
                     gluSphere(sph1, 0.1, 5, 5)
                     glTranslatef(-a_, -b_, -c_)
 
                     glBegin(GL_LINES)
-                    glNormal3f(0,1,0)
-                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
+                    glNormal3f(0, 1, 0)
+                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0, 0, 1])
                     glVertex3f(a_, b_, c_)
                     a, b, c = rescale_normal(normal, 0.5).to_tuple()
-                    glVertex3f(a_+a, b_+b, c_+c)
+                    glVertex3f(a_ + a, b_ + b, c_ + c)
                     glEnd()
 
-            #draw of vertical rectangles
-            if i+1 < len(GRID):
+            # draw of vertical rectangles
+            if i + 1 < len(GRID):
                 i_plus1_y = 0
                 if D3:
-                    i_plus1_y = calculate_height(i+1, j)
+                    i_plus1_y = calculate_height(i + 1, j)
                 glBegin(GL_POLYGON)
-                v0 = Vector(Point(2*x, y, 2*z+1))
-                v1 = Vector(Point(2*x+1, y, 2*z+1))
-                v2 = Vector(Point(2*x, i_plus1_y, 2*z+2))
-                v1 = v1-v0
-                v2 = v2-v0
+                v0 = Vector(Point(2 * x, y, 2 * z + 1))
+                v1 = Vector(Point(2 * x + 1, y, 2 * z + 1))
+                v2 = Vector(Point(2 * x, i_plus1_y, 2 * z + 2))
+                v1 = v1 - v0
+                v2 = v2 - v0
                 normal = v2 ^ v1
                 glNormal3f(*normal.to_tuple())
                 color = calculate_color(i, j)
 
-                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
-                glVertex3f(2*x, y, 2*z+1)
-                glVertex3f(2*x+1, y, 2*z+1)
-                color = calculate_color(i+1, j)
+                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
+                             [color, color, color, 1])
+                glVertex3f(2 * x, y, 2 * z + 1)
+                glVertex3f(2 * x + 1, y, 2 * z + 1)
+                color = calculate_color(i + 1, j)
 
-                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
-                glVertex3f(2*x+1, i_plus1_y, 2*z+2)
-                glVertex3f(2*x, i_plus1_y, 2*z+2)
-                glNormal3f(0,1,0)
+                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
+                             [color, color, color, 1])
+                glVertex3f(2 * x + 1, i_plus1_y, 2 * z + 2)
+                glVertex3f(2 * x, i_plus1_y, 2 * z + 2)
+                glNormal3f(0, 1, 0)
                 glEnd()
                 if NORMALS:
-                    a = Point(2*x, y, 2*z+1)
-                    b = Point(2*x+1, i_plus1_y, 2*z+2)
-                    seg = LineSegment(a,b)
+                    a = Point(2 * x, y, 2 * z + 1)
+                    b = Point(2 * x + 1, i_plus1_y, 2 * z + 2)
+                    seg = LineSegment(a, b)
                     a_, b_, c_ = seg.mid_point().to_tuple()
-                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
+                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0, 0, 1])
                     glTranslatef(a_, b_, c_)
                     gluSphere(sph1, 0.1, 5, 5)
                     glTranslatef(-a_, -b_, -c_)
 
                     glBegin(GL_LINES)
-                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
+                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0, 0, 1])
                     glVertex3f(a_, b_, c_)
                     a, b, c = rescale_normal(normal, 0.5).to_tuple()
-                    glVertex3f(a_+a, b_+b, c_+c)
+                    glVertex3f(a_ + a, b_ + b, c_ + c)
                     glEnd()
-
             # draw of inner triangles
-            if i+1 < len(GRID) and j+1<len(GRID[0]):
+            if i + 1 < len(GRID) and j + 1 < len(GRID[0]):
                 ij_plus1_y = 0
                 i_plus1_y = 0
                 j_plus1_y = 0
                 if D3:
-                    ij_plus1_y = calculate_height(i+1, j+1)
-                    i_plus1_y = calculate_height(i+1, j)
-                    j_plus1_y = calculate_height(i, j+1)
+                    ij_plus1_y = calculate_height(i + 1, j + 1)
+                    i_plus1_y = calculate_height(i + 1, j)
+                    j_plus1_y = calculate_height(i, j + 1)
 
                 glBegin(GL_POLYGON)
-                v0 = Vector(Point(2*x+1, y, 2*z+1))
-                v1 = Vector(Point(2*x+2, ij_plus1_y, 2*z+2))
-                v2 = Vector(Point(2*x+1, i_plus1_y, 2*z+2))
-                v1 = v1-v0
-                v2 = v2-v0
+                v0 = Vector(Point(2 * x + 1, y, 2 * z + 1))
+                v1 = Vector(Point(2 * x + 2, ij_plus1_y, 2 * z + 2))
+                v2 = Vector(Point(2 * x + 1, i_plus1_y, 2 * z + 2))
+                v1 = v1 - v0
+                v2 = v2 - v0
                 normal = v2 ^ v1
                 glNormal3f(*normal.to_tuple())
                 color = calculate_color(i, j)
 
-                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
-                glVertex3f(2*x+1, y, 2*z+1)
+                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
+                             [color, color, color, 1])
+                glVertex3f(2 * x + 1, y, 2 * z + 1)
 
-                color = calculate_color(i+1, j)
+                color = calculate_color(i + 1, j)
 
-                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
-                glVertex3f(2*x+1, i_plus1_y, 2*z+2)
+                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
+                             [color, color, color, 1])
+                glVertex3f(2 * x + 1, i_plus1_y, 2 * z + 2)
 
-                color = calculate_color(i+1, j+1)
+                color = calculate_color(i + 1, j + 1)
 
-                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
-                glVertex3f(2*x+2, ij_plus1_y, 2*z+2)
+                glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
+                             [color, color, color, 1])
+                glVertex3f(2 * x + 2, ij_plus1_y, 2 * z + 2)
 
-                glNormal3f(0,1,0)
+                glNormal3f(0, 1, 0)
                 glEnd()
                 if NORMALS:
                     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
@@ -375,102 +383,101 @@ def display():
                     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0,0, 1])
                     glVertex3f(a, b, c)
                     glEnd()
-    if PATH:
-        pts = []
-        glBegin(GL_LINES)
-        for i in range(1, len(PATH)) :
-            sz, sx = PATH[i-1]
-            dz, dx = PATH[i]
-            sense = calculate_sense(PATH[i-1], PATH[i])
-            y_s, y_d = 0.5, 0.5
-            if D3:
-                y_s = (GRID[sz][sx])/255 *10 + .5
-                y_d = (GRID[dz][dx])/255 * 10 + .5
-            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
-            # glColor3f (1.0, 0.0, 0.0);
-            glVertex3f(2*sx+0.5, y_s, 2*sz+0.5)
-            pts.append((2*sx+0.5, y_s, 2*sz+0.5))
-            print(sense)
-            if sense == "horizontal left":
-                glVertex3f(2*sx, y_s, 2*sz+0.5)
-                glVertex3f(2*sx, y_s, 2*sz+0.5)
-                glVertex3f(2*dx+1, y_d, 2*dz+0.5)
-                glVertex3f(2*dx+1, y_d, 2*dz+0.5)
-                pts.append((2*sx, y_s, 2*sz+0.5))
-                pts.append((2*dx+1, y_d, 2*dz+0.5))
-            if sense == "horizontal right":
-                glVertex3f(2*sx+1, y_s, 2*sz+0.5)
-                glVertex3f(2*sx+1, y_s, 2*sz+0.5)
-                glVertex3f(2*dx, y_d, 2*dz+0.5)
-                glVertex3f(2*dx, y_d, 2*dz+0.5)
-                pts.append((2*sx+1, y_s, 2*sz+0.5))
-                pts.append((2*dx, y_d, 2*dz+0.5))
-            elif sense =="vertical down":
-                glVertex3f(2*sx+0.5, y_s, 2*sz+1)
-                glVertex3f(2*sx+0.5, y_s, 2*sz+1)
-                glVertex3f(2*dx+0.5, y_d, 2*dz)
-                glVertex3f(2*dx+0.5, y_d, 2*dz)
-                pts.append((2*sx+0.5, y_s, 2*sz+1))
-                pts.append((2*dx+0.5, y_d, 2*dz))
-            elif sense =="vertical up":
-                glVertex3f(2*sx+0.5, y_s, 2*sz)
-                glVertex3f(2*sx+0.5, y_s, 2*sz)
-                glVertex3f(2*dx+0.5, y_d, 2*dz+1)
-                glVertex3f(2*dx+0.5, y_d, 2*dz+1)
-                pts.append((2*sx+0.5, y_s, 2*sz))
-                pts.append((2*dx+0.5, y_d, 2*dz+1))
-            elif sense =="ldiagonal down":
-                glVertex3f(2*sx, y_s, 2*sz+1)
-                glVertex3f(2*sx, y_s, 2*sz+1)
-                i, j = PATH[i-1]
-                left_h = 0.5
-                down_h = 0.5
-                if D3:
-                    left_h = calculate_height(i, j-1)+0.5
-                    down_h = calculate_height(i+1, j)+0.5
-                mid_p_h = ((2*sx-1 + 2*sx)/2,(left_h+down_h)/2, (2*sz+2 + 2*sz+1)/2)
-                glVertex3f(*mid_p_h)
-                glVertex3f(*mid_p_h)
-                glVertex3f(2*dx+1, y_d, 2*dz)
-                glVertex3f(2*dx+1, y_d, 2*dz)
-                pts.append((2*sx, y_s, 2*sz+1))
-                pts.append(mid_p_h)
-                pts.append((2*dx+1, y_d, 2*dz))
-            elif sense =="ldiagonal up":
-                glVertex3f(2*sx+1, y_s, 2*sz)
-                glVertex3f(2*sx+1, y_s, 2*sz)
-                glVertex3f(2*dx, y_d, 2*dz+1)
-                glVertex3f(2*dx, y_d, 2*dz+1)
-                pts.append((2*sx+1, y_s, 2*sz))
-                pts.append((2*dx, y_d, 2*dz+1))
-            elif sense =="rdiagonal down":
-                glVertex3f(2*sx+1, y_s, 2*sz+1)
-                glVertex3f(2*sx+1, y_s, 2*sz+1)
-                glVertex3f(2*dx, y_d, 2*dz)
-                glVertex3f(2*dx, y_d, 2*dz)
-                pts.append((2*sx+1, y_s, 2*sz+1))
-                pts.append((2*dx, y_d, 2*dz))
-            elif sense =="rdiagonal up":
-                glVertex3f(2*sx, y_s, 2*sz)
-                glVertex3f(2*sx, y_s, 2*sz)
-                glVertex3f(2*dx+1, y_d, 2*dz+1)
-                glVertex3f(2*dx+1, y_d, 2*dz+1)
-                pts.append((2*sx, y_d, 2*sz))
-                pts.append((2*dx+1, y_d, 2*dz+1))
-            else:
-                print(sense)
-                # glVertex3f(2*sx, y_s, 2*sz+1)
-                # glVertex3f(2*sx, y_s, 2*sz+1)
-                # glVertex3f(2*dx+1, y_d, 2*dz)
-                # glVertex3f(2*dx+1, y_d, 2*dz)
-                # pts.append((2*sx, y_s, 2*sz+1))
-                # pts.append((2*dx+1, y_d, 2*dz+1))
-            glVertex3f(2*dx+0.5, y_d, 2*dz+0.5);
-        glEnd()
+#     if PATH:
+#         pts = []
+#         glBegin(GL_LINES)
+#         for i in range(1, len(PATH)) :
+#             sz, sx = PATH[i-1]
+#             dz, dx = PATH[i]
+#             sense = calculate_sense(PATH[i-1], PATH[i])
+#             y_s, y_d = 0.5, 0.5
+#             if D3:
+#                 y_s = (GRID[sz][sx])/255 *10 + .5
+#                 y_d = (GRID[dz][dx])/255 * 10 + .5
+#             glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [color, color, color, 1])
+#             # glColor3f (1.0, 0.0, 0.0);
+#             glVertex3f(2*sx+0.5, y_s, 2*sz+0.5)
+#             pts.append((2*sx+0.5, y_s, 2*sz+0.5))
+#             print(sense)
+#             if sense == "horizontal left":
+#                 glVertex3f(2*sx, y_s, 2*sz+0.5)
+#                 glVertex3f(2*sx, y_s, 2*sz+0.5)
+#                 glVertex3f(2*dx+1, y_d, 2*dz+0.5)
+#                 glVertex3f(2*dx+1, y_d, 2*dz+0.5)
+#                 pts.append((2*sx, y_s, 2*sz+0.5))
+#                 pts.append((2*dx+1, y_d, 2*dz+0.5))
+#             if sense == "horizontal right":
+#                 glVertex3f(2*sx+1, y_s, 2*sz+0.5)
+#                 glVertex3f(2*sx+1, y_s, 2*sz+0.5)
+#                 glVertex3f(2*dx, y_d, 2*dz+0.5)
+#                 glVertex3f(2*dx, y_d, 2*dz+0.5)
+#                 pts.append((2*sx+1, y_s, 2*sz+0.5))
+#                 pts.append((2*dx, y_d, 2*dz+0.5))
+#             elif sense =="vertical down":
+#                 glVertex3f(2*sx+0.5, y_s, 2*sz+1)
+#                 glVertex3f(2*sx+0.5, y_s, 2*sz+1)
+#                 glVertex3f(2*dx+0.5, y_d, 2*dz)
+#                 glVertex3f(2*dx+0.5, y_d, 2*dz)
+#                 pts.append((2*sx+0.5, y_s, 2*sz+1))
+#                 pts.append((2*dx+0.5, y_d, 2*dz))
+#             elif sense =="vertical up":
+#                 glVertex3f(2*sx+0.5, y_s, 2*sz)
+#                 glVertex3f(2*sx+0.5, y_s, 2*sz)
+#                 glVertex3f(2*dx+0.5, y_d, 2*dz+1)
+#                 glVertex3f(2*dx+0.5, y_d, 2*dz+1)
+#                 pts.append((2*sx+0.5, y_s, 2*sz))
+#                 pts.append((2*dx+0.5, y_d, 2*dz+1))
+#             elif sense =="ldiagonal down":
+#                 glVertex3f(2*sx, y_s, 2*sz+1)
+#                 glVertex3f(2*sx, y_s, 2*sz+1)
+#                 i, j = PATH[i-1]
+#                 left_h = 0.5
+#                 down_h = 0.5
+#                 if D3:
+#                     left_h = calculate_height(i, j-1)+0.5
+#                     down_h = calculate_height(i+1, j)+0.5
+#                 mid_p_h = ((2*sx-1 + 2*sx)/2,(left_h+down_h)/2, (2*sz+2 + 2*sz+1)/2)
+#                 glVertex3f(*mid_p_h)
+#                 glVertex3f(*mid_p_h)
+#                 glVertex3f(2*dx+1, y_d, 2*dz)
+#                 glVertex3f(2*dx+1, y_d, 2*dz)
+#                 pts.append((2*sx, y_s, 2*sz+1))
+#                 pts.append(mid_p_h)
+#                 pts.append((2*dx+1, y_d, 2*dz))
+#             elif sense =="ldiagonal up":
+#                 glVertex3f(2*sx+1, y_s, 2*sz)
+#                 glVertex3f(2*sx+1, y_s, 2*sz)
+#                 glVertex3f(2*dx, y_d, 2*dz+1)
+#                 glVertex3f(2*dx, y_d, 2*dz+1)
+#                 pts.append((2*sx+1, y_s, 2*sz))
+#                 pts.append((2*dx, y_d, 2*dz+1))
+#             elif sense =="rdiagonal down":
+#                 glVertex3f(2*sx+1, y_s, 2*sz+1)
+#                 glVertex3f(2*sx+1, y_s, 2*sz+1)
+#                 glVertex3f(2*dx, y_d, 2*dz)
+#                 glVertex3f(2*dx, y_d, 2*dz)
+#                 pts.append((2*sx+1, y_s, 2*sz+1))
+#                 pts.append((2*dx, y_d, 2*dz))
+#             elif sense =="rdiagonal up":
+#                 glVertex3f(2*sx, y_s, 2*sz)
+#                 glVertex3f(2*sx, y_s, 2*sz)
+#                 glVertex3f(2*dx+1, y_d, 2*dz+1)
+#                 glVertex3f(2*dx+1, y_d, 2*dz+1)
+#                 pts.append((2*sx, y_d, 2*sz))
+#                 pts.append((2*dx+1, y_d, 2*dz+1))
+#             else:
+#                 print(sense)
+#                 # glVertex3f(2*sx, y_s, 2*sz+1)
+#                 # glVertex3f(2*sx, y_s, 2*sz+1)
+#                 # glVertex3f(2*dx+1, y_d, 2*dz)
+#                 # glVertex3f(2*dx+1, y_d, 2*dz)
+#                 # pts.append((2*sx, y_s, 2*sz+1))
+#                 # pts.append((2*dx+1, y_d, 2*dz+1))
+#             glVertex3f(2*dx+0.5, y_d, 2*dz+0.5);
+#         glEnd()
 
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [0, 1, 0, 1])
-        # glColor(0.0, 1.0, 1.0)
-        glTranslatef(*pts[MOVE_WORM%len(pts)])
+        glTranslatef(*pts[MOVE_WORM % len(pts)])
         gluQuadricDrawStyle(sph1, GLU_FILL)
         gluQuadricNormals(sph1, GLU_SMOOTH)
         gluQuadricTexture(sph1, GL_TRUE)
