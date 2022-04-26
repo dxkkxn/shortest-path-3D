@@ -15,6 +15,10 @@ class Point(object):
         """Representation en str."""
         return f"({self.x}, {self.y}, {self.z})"
 
+    def __repr__(self):
+        """Representation en str."""
+        return f"({self.x}, {self.y}, {self.z})"
+
     def to_tuple(self):
         """Renvoi le vector en forme de tuple."""
         return self.x, self.y, self.z
