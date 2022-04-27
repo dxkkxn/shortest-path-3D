@@ -274,6 +274,13 @@ def calculate_sense(p1, p2):
     raise TypeError
     return None
 
+def random_point(point: Point):
+    x, y, z = point.to_tuple()
+    points = [point, Point(x + .5, y, z), Point(x + 1, y, z),
+                  Point(x, y, z + .5), Point(x + .5, y, z + .5),
+                  Point(x, y, z + 1), Point(x + .5, y, z + 1),
+                  Point(x + 1, y, z+ 1)]
+    return random.choice(points)
 
 CONTROL_PTS = []
 def display():
@@ -438,22 +445,55 @@ def display():
         if D3:
             y_s = (GRID[sz][sx]) / 255 * 10 + .5
         pts.append(Point(2 * sx + 0.5, y_s, 2 * sz + 0.5))
+        point_prec = Point(2 * sx + 0.5, y_s, 2 * sz + 0.5)
         for i in range(1, len(PATH)):
             sz, sx = PATH[i - 1]
             dz, dx = PATH[i]
             sense = calculate_sense(PATH[i - 1], PATH[i])
+            print(sense)
             y_s, y_d = 0.5, 0.5
             if D3:
                 y_s = (GRID[sz][sx]) / 255 * 10 + .5
                 y_d = (GRID[dz][dx]) / 255 * 10 + .5
             if sense == "horizontal left":
+                pts.append(random_point(Point(2 * sx, y_s, 2 * sz)))
+                pts.append(random_point(Point(2 * sx, y_s, 2 * sz)))
+
                 pts.append(Point(2 * sx, y_s, 2 * sz + 0.5))
+
+                segment_sup = LineSegment(Point(2 * sx, y_s, 2 * sz),
+                                          Point(2 * dx + 1, y_d, 2 * dz))
+
+                segment_inf = LineSegment(Point(2 * sx + 1, y_s, 2 * sz + 1),
+                                          Point(2 * dx, y_d, 2 * dz + 1))
+
+                mid_p = segment_sup.mid_point()
+                pts.append(mid_p)
+                mid_p = segment_inf.mid_point()
+                pts.append(mid_p)
+
                 pts.append(Point(2 * dx + 1, y_d, 2 * dz + 0.5))
+                point_prec = Point(2 * dx + 1, y_d, 2 * dz + 0.5)
             elif sense == "horizontal right":
                 pts.append(Point(2 * sx + 1, y_s, 2 * sz + 0.5))
                 pts.append(Point(2 * dx, y_d, 2 * dz + 0.5))
             elif sense == "vertical down":
+                pts.append(random_point(Point(2 * sx, y_s, 2 * sz)))
+                pts.append(random_point(Point(2 * sx, y_s, 2 * sz)))
+
                 pts.append(Point(2 * sx + 0.5, y_s, 2 * sz + 1))
+
+                segment_sup = LineSegment(Point(2 * sx, y_s, 2 * sz + 1),
+                                          Point(2 * dx, y_d, 2 * dz))
+
+                segment_inf = LineSegment(Point(2 * sx + 1, y_s, 2 * sz + 1),
+                                          Point(2 * dx + 1, y_d, 2 * dz))
+
+                mid_p = segment_sup.mid_point()
+                pts.append(mid_p)
+                mid_p = segment_inf.mid_point()
+                pts.append(mid_p)
+
                 pts.append(Point(2 * dx + 0.5, y_d, 2 * dz))
             elif sense == "vertical up":
                 pts.append(Point(2 * sx + 0.5, y_s, 2 * sz))
@@ -462,14 +502,43 @@ def display():
                 i, j = PATH[i - 1]
                 left_h = 0.5
                 down_h = 0.5
+
+                pts.append(random_point(Point(2 * sx, y_s, 2 * sz)))
+                pts.append(random_point(Point(2 * sx, y_s, 2 * sz)))
+
+                pts.append(Point(2 * sx, y_s, 2 * sz + 1))
                 if D3:
-                    left_h = calculate_height(i, j - 1) + 0.5
-                    down_h = calculate_height(i + 1, j) + 0.5
+                    left_h = calculate_height(i, j - 1) + .5
+                    down_h = calculate_height(i + 1, j) + .5
+
+                s_down = Point(2 * sx, down_h, 2 * sz + 2)
+                s_left = Point(2 * sx-1, left_h, 2 * sz + 1)
+                vertex = (Point(2 * sx, y_s, 2 * sz + 1))
+                seg_down = LineSegment(vertex, s_down)
+                seg_left = LineSegment(vertex, s_left)
+                pts.append(seg_down.mid_point())
+                pts.append(seg_left.mid_point())
+
+
                 mid_p_h = ((2 * sx - 1 + 2 * sx) / 2,
                            (left_h + down_h) / 2,
                            (2 * sz + 2 + 2 * sz + 1) / 2)
-                pts.append(Point(2 * sx, y_s, 2 * sz + 1))
                 pts.append(Point(*mid_p_h))
+
+
+                if D3:
+                    left_h = calculate_height(i, j - 1) + .5
+                    down_h = calculate_height(i + 1, j) + .5
+
+                s_down = Point(2 * sx, down_h, 2 * sz + 2)
+                s_left = Point(2 * sx - 1, left_h, 2 * sz + 1)
+                vertex = Point(2 * dx + 1, y_d, 2 * dz)
+
+                seg_down = LineSegment(vertex, s_down)
+                seg_left = LineSegment(vertex, s_left)
+                pts.append(seg_down.mid_point())
+                pts.append(seg_left.mid_point())
+
                 pts.append(Point(2 * dx + 1, y_d, 2 * dz))
             elif sense == "ldiagonal up":
                 pts.append(Point(2 * sx + 1, y_s, 2 * sz))
@@ -484,6 +553,9 @@ def display():
         y_s, y_d = 0.5, 0.5
         if D3:
             y_s = (GRID[sz][sx]) / 255 * 10 + .5
+        pts.append(random_point(Point(2 * sx, y_s, 2 * sz)))
+        pts.append(random_point(Point(2 * sx, y_s, 2 * sz)))
+
         pts.append(Point(2 * sx + 0.5, y_s, 2 * sz + 0.5))
         CONTROL_PTS = pts
         PATH = False
@@ -491,9 +563,11 @@ def display():
     if DRAW_PATH:
         pts = CONTROL_PTS
         test = []
-        for i in range(0, len(pts), 3):
-            if i+4 < len(pts):
-                test.extend(cubic_bezier(pts[i:i+4]))
+        print(len(pts), len(pts)%4 == 0)
+        for i in range(0, len(pts)-1, 3):
+            # if i+4 < len(pts):
+            print(i, i+4, len(pts))
+            test.extend(cubic_bezier(pts[i:i+4]))
         draw_lines(test)
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [0, 1, 0, 1])
         glTranslatef(*test[MOVE_WORM % len(test)].to_tuple())
