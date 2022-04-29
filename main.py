@@ -9,6 +9,7 @@ from math import sqrt
 from copy import deepcopy
 from dijkstra import dijkstra_matrix_sorted_dict
 from linear_algebra import LineSegment, Vector, Point
+from water_rendering import init_water, water_render
 
 INF = float('inf')
 
@@ -230,6 +231,8 @@ def init():
     quadric = gluNewQuadric()
     gluQuadricDrawStyle(quadric, GLU_FILL)
     init_random_grid(N)
+    init_water()
+    glDisable(GL_TEXTURE_2D)
     return
 
 
@@ -512,19 +515,18 @@ def display():
                     down_h = calculate_height(i + 1, j) + .5
 
                 s_down = Point(2 * sx, down_h, 2 * sz + 2)
-                s_left = Point(2 * sx-1, left_h, 2 * sz + 1)
+                s_left = Point(2 * sx - 1, left_h, 2 * sz + 1)
                 vertex = (Point(2 * sx, y_s, 2 * sz + 1))
                 seg_down = LineSegment(vertex, s_down)
                 seg_left = LineSegment(vertex, s_left)
+
                 pts.append(seg_down.mid_point())
                 pts.append(seg_left.mid_point())
-
 
                 mid_p_h = ((2 * sx - 1 + 2 * sx) / 2,
                            (left_h + down_h) / 2,
                            (2 * sz + 2 + 2 * sz + 1) / 2)
                 pts.append(Point(*mid_p_h))
-
 
                 if D3:
                     left_h = calculate_height(i, j - 1) + .5
@@ -560,14 +562,13 @@ def display():
         CONTROL_PTS = pts
         PATH = False
 
+
     if DRAW_PATH:
         pts = CONTROL_PTS
         test = []
-        print(len(pts), len(pts)%4 == 0)
         for i in range(0, len(pts)-1, 3):
-            # if i+4 < len(pts):
-            print(i, i+4, len(pts))
             test.extend(cubic_bezier(pts[i:i+4]))
+
         draw_lines(test)
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [0, 1, 0, 1])
         glTranslatef(*test[MOVE_WORM % len(test)].to_tuple())
@@ -575,8 +576,26 @@ def display():
         gluQuadricNormals(sph1, GLU_SMOOTH)
         gluQuadricTexture(sph1, GL_TRUE)
         gluSphere(sph1, 0.4, 100, 80)
+        x, y, z = test[MOVE_WORM % len(test)].to_tuple()
+        glTranslatef(-x, -y, -z)
+
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [1, 1, 1, 1])
+    glEnable(GL_BLEND)
+    glBlendFunc( GL_ONE, GL_SRC_ALPHA)
+    glEnable(GL_TEXTURE_2D)
+    water_render(3.2)
+    glDisable(GL_TEXTURE_2D)
+    glDisable(GL_BLEND)
+
+    # glDisable(GL_TEXTURE_2D)
+    # init_water()
+
     glPopMatrix()
+    # glutSwapBuffers()
+    glFlush()
     glutSwapBuffers()
+    glutPostRedisplay()
+
     return
 
 
@@ -585,6 +604,7 @@ def reshape(width, height):
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     gluPerspective(110, width / height, 3, 100)
+    # glOrtho(-100, 10, -100, 10, -100, 10)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
     return
@@ -662,6 +682,7 @@ def keyboard(key, x, y):
 # MAIN
 
 
+
 def smooth(grid):
     grid_copy = deepcopy(grid)
     dv = [-1, 0, 1]
@@ -709,12 +730,12 @@ def init_random_grid(n):
     grid = [[random.randint(0, 255) for x in range(n)] for x in range(n)]
     grid = tuckey_smooth(grid, 1)
     # grid = smooth(grid)
-    rd_line, rd_col = random.randint(0, n - 1), random.randint(0, n - 1)
-    while rd_line != TARGET[0] and rd_line == START[0]:
-        rd_line, rd_col = random.randint(0, n - 1), random.randint(0, n - 1)
-    for j in range(n):
-        grid[rd_line][j] = INF
-    grid[rd_line][rd_col] = random.randint(0, 255)
+    # rd_line, rd_col = random.randint(0, n - 1), random.randint(0, n - 1)
+    # while rd_line != TARGET[0] and rd_line == START[0]:
+    #     rd_line, rd_col = random.randint(0, n - 1), random.randint(0, n - 1)
+    # for j in range(n):
+    #     grid[rd_line][j] = INF
+    # grid[rd_line][rd_col] = random.randint(0, 255)
     GRID = grid
     return
 
