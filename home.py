@@ -1,6 +1,3 @@
-from OpenGL.GL import *  # car prefixe systematique
-from OpenGL.GLU import *
-from OpenGL.GLUT import *
 import random
 import sys
 # from Image import open
@@ -10,8 +7,16 @@ from copy import deepcopy
 from dijkstra import dijkstra_matrix_sorted_dict
 from linear_algebra import LineSegment, Vector, Point
 from water_rendering import init_water, water_render
+import time
+import tkinter as tk
+from tkinter import ttk
+from pyopengltk import OpenGLFrame
+from OpenGL.GL import *  # car prefixe systematique
+from OpenGL.GLU import *
+from OpenGL.GLUT import *
+# from OpenGL import *
 
-INF = float('inf')
+inf = float('inf')
 
 
 def barycenter_calculation(a: Point, b: Point, c: Point):
@@ -31,8 +36,8 @@ def rescale_normal(nv: Vector, norm: int):
 def draw_normals():
     """Affichage des normals."""
     sph1 = gluNewQuadric()
-    for i in range(len(GRID)):
-        for j in range(len(GRID[0])):
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
             x, z = (j, i)
             y = 0
             if D3:
@@ -54,7 +59,7 @@ def draw_normals():
             glEnd()
             # horizontal rectangles
             j_plus1_y = 0
-            if j + 1 < len(GRID[0]):
+            if j + 1 < len(grid[0]):
                 if D3:
                     j_plus1_y = calculate_height(i, j + 1)
 
@@ -79,7 +84,7 @@ def draw_normals():
                 glVertex3fv(res_normal.translate(Point(cx, cy, cz)).to_tuple())
                 glEnd()
 
-            if i + 1 < len(GRID):
+            if i + 1 < len(grid):
                 i_plus1_y = 0
                 if D3:
                     i_plus1_y = calculate_height(i + 1, j)
@@ -104,7 +109,7 @@ def draw_normals():
                 glEnd()
 
             # inner triagle
-            if i + 1 < len(GRID) and j + 1 < len(GRID[0]):
+            if i + 1 < len(grid) and j + 1 < len(grid[0]):
                 ij_plus1_y = 0
                 i_plus1_y = 0
                 j_plus1_y = 0
@@ -198,18 +203,17 @@ def display_grid():
 ###############################################################
 #
 x_pos, y_pos, z_pos = 0, 10, 10
-DISPLAY_GRID = False
-GRID = None
+DISPLAY_grid = False
+grid = None
 PATH = None
 D3 = False
-N = 20
-START = (0, N - 1)
-TARGET = (N - 1, 0)
+# N = 20
+start = (None, None)
+target = (None, None)
 MOVE_WORM = 0
 NORMALS = False
 DRAW_PATH = False
-test_g = False
-test_pts = (None, None)
+y_water = -1
 
 def init():
     """Initialisation des variables et lumiere openGL."""
@@ -218,7 +222,6 @@ def init():
     # diffuse = [0.7, 0.7, 0.7, 1.0]
     # specular = [0.001, 0.001, 0.001, 1.0]
     pos = [1, 50, 50, 1]
-    # pos = [0, 0, -50, 1]
     glEnable(GL_DEPTH_TEST)
     glEnable(GL_BLEND)
     glDepthFunc(GL_LESS)
@@ -233,7 +236,7 @@ def init():
     glShadeModel(GL_SMOOTH)
     quadric = gluNewQuadric()
     gluQuadricDrawStyle(quadric, GLU_FILL)
-    init_random_grid(N)
+    # init_random_grid(12)
     init_water()
     glDisable(GL_TEXTURE_2D)
     return
@@ -241,16 +244,16 @@ def init():
 
 def calculate_color(i, j):
     """Calcul du color selon la coordonnee (i,j)."""
-    color = GRID[i][j] / 255
-    if color == INF:
+    color = old_grid[i][j] / 255
+    if color == inf:
         color = .0
     return color
 
 
 def calculate_height(i, j):
     """Calcul du hauteur selon la coordonnee (i,j)."""
-    y = GRID[i][j] / 255 * 10
-    if y == INF:
+    y = old_grid[i][j] / 255 * 10
+    if y == inf:
         y = 0
     return y
 
@@ -298,19 +301,12 @@ def display():
               0, 1, 0)  # up vector
     sph1 = gluNewQuadric()
 
-    if DISPLAY_GRID:
+    if DISPLAY_grid:
         display_grid()
-    if test_g:
-        print("xd")
-        glColor3f(1, 0, 0)
-        # glTranslatef(x_pos, - 10 + y_pos, -10 +  z_pos)
-        glTranslatef(x_pos, - 8 + y_pos, -10 + z_pos)
-        gluSphere(sph1, 2, 20, 20)
-        glTranslatef(-x_pos, -( - 8 + y_pos), - (- 10 +  z_pos))
     glClearColor(0.0, 0.0, 0.0, 0.0)
 
-    for i in range(len(GRID)):
-        for j in range(len(GRID[0])):
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
             x, z = (j, i)
             y = 0
             if D3:
@@ -332,7 +328,7 @@ def display():
             glEnd()
 
             # draw of horizontal rectangles
-            if j + 1 < len(GRID[0]):
+            if j + 1 < len(grid[0]):
                 i_plus1_y = 0
                 j_plus1_y = 0
                 if D3:
@@ -360,7 +356,7 @@ def display():
                 glEnd()
 
             # draw of vertical rectangles
-            if i + 1 < len(GRID):
+            if i + 1 < len(grid):
                 i_plus1_y = 0
                 if D3:
                     i_plus1_y = calculate_height(i + 1, j)
@@ -385,7 +381,7 @@ def display():
                 glNormal3f(0, 1, 0)
                 glEnd()
             # draw of inner triangles
-            if i + 1 < len(GRID) and j + 1 < len(GRID[0]):
+            if i + 1 < len(grid) and j + 1 < len(grid[0]):
                 ij_plus1_y = 0
                 i_plus1_y = 0
                 j_plus1_y = 0
@@ -456,7 +452,7 @@ def display():
         sz, sx = PATH[0]
         y_s, y_d = 0.5, 0.5
         if D3:
-            y_s = (GRID[sz][sx]) / 255 * 10 + .5
+            y_s = (grid[sz][sx]) / 255 * 10 + .5
         pts.append(Point(2 * sx + 0.5, y_s, 2 * sz + 0.5))
         point_prec = Point(2 * sx + 0.5, y_s, 2 * sz + 0.5)
         for i in range(1, len(PATH)):
@@ -466,8 +462,8 @@ def display():
             print(sense)
             y_s, y_d = 0.5, 0.5
             if D3:
-                y_s = (GRID[sz][sx]) / 255 * 10 + .5
-                y_d = (GRID[dz][dx]) / 255 * 10 + .5
+                y_s = (grid[sz][sx]) / 255 * 10 + .5
+                y_d = (grid[dz][dx]) / 255 * 10 + .5
             if sense == "horizontal left":
                 pts.append(random_point(Point(2 * sx, y_s, 2 * sz)))
                 pts.append(random_point(Point(2 * sx, y_s, 2 * sz)))
@@ -522,6 +518,7 @@ def display():
                 pts.append(Point(2 * sx, y_s, 2 * sz + 1))
                 if D3:
                     left_h = calculate_height(i, j - 1) + .5
+                    print(i+1, j)
                     down_h = calculate_height(i + 1, j) + .5
 
                 s_down = Point(2 * sx, down_h, 2 * sz + 2)
@@ -564,7 +561,7 @@ def display():
         sz, sx = PATH[-1]
         y_s, y_d = 0.5, 0.5
         if D3:
-            y_s = (GRID[sz][sx]) / 255 * 10 + .5
+            y_s = (grid[sz][sx]) / 255 * 10 + .5
         pts.append(random_point(Point(2 * sx, y_s, 2 * sz)))
         pts.append(random_point(Point(2 * sx, y_s, 2 * sz)))
 
@@ -593,7 +590,7 @@ def display():
     glEnable(GL_BLEND)
     glBlendFunc( GL_ONE, GL_SRC_ALPHA)
     glEnable(GL_TEXTURE_2D)
-    water_render(3.2)
+    water_render(y_water)
     glDisable(GL_TEXTURE_2D)
     glDisable(GL_BLEND)
 
@@ -601,11 +598,10 @@ def display():
     # init_water()
 
     glPopMatrix()
-    # glutSwapBuffers()
+    glutSwapBuffers()
     glFlush()
     glutSwapBuffers()
     glutPostRedisplay()
-
     return
 
 
@@ -614,48 +610,11 @@ def reshape(width, height):
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
     gluPerspective(110, width / height, 3, 100)
-    # glOrtho(0, 40, 0, 40, -100, 100)
-    # glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+    # glOrtho(-100, 10, -100, 10, -100, 10)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
     return
 
-def display2():
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    glPushMatrix()
-    glLoadIdentity()
-    if DISPLAY_GRID:
-        display_grid()
-    for i in range(20):
-        for j in range(20):
-            glBegin(GL_POLYGON);
-            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [1, 0, 0, 1])
-            glVertex3f(i, j, 0);
-            glVertex3f(i, j+1, 0);
-            glVertex3f(i+1, j+1, 0);
-            glVertex3f(i+1, j, 0);
-            glEnd();
-    if test_g:
-        # print("ok")
-        i = int(x_)
-        j = int(y_)
-        # print(i, j)
-        glBegin(GL_POLYGON);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [0, 0, 1, 1])
-        glVertex3f(i, j, 0);
-        glVertex3f(i, j+1, 0);
-        glVertex3f(i+1, j+1, 0);
-        glVertex3f(i+1, j, 0);
-        glEnd();
-
-
-
-
-    glPopMatrix()
-    glFlush()
-    glutSwapBuffers()
-    glutPostRedisplay()
-    return
 def draw_lines(points_list: list[Point]):
     for i in range(1, len(points_list)):
         glBegin(GL_LINES)
@@ -692,15 +651,16 @@ def horner(poly, x):
     return res
 
 def keyboard(key, x, y):
-    global x_pos, y_pos, z_pos, DISPLAY_GRID, PATH, D3, MOVE_WORM, NORMALS, DRAW_PATH
+    global x_pos, y_pos, z_pos, DISPLAY_grid, PATH, D3, MOVE_WORM, NORMALS, DRAW_PATH
     if key == b'g':
-        DISPLAY_GRID = not DISPLAY_GRID
+        DISPLAY_grid = not DISPLAY_grid
     elif key == b'3':
         D3 = not D3
     elif key == b'p':
-        for line in GRID:
+        for line in grid:
             print(line)
-        PATH = dijkstra_matrix_sorted_dict(GRID, START, TARGET)
+        print(start, target)
+        PATH = dijkstra_matrix_sorted_dict(grid, start, target)
     elif key == b'w':
         y_pos -= 1
     elif key == b's':
@@ -720,9 +680,9 @@ def keyboard(key, x, y):
     elif key == b'd':
         DRAW_PATH = not DRAW_PATH
     elif key == b'\033':
-        glutDestroyWindow(WIN)
+        # glutDestroyWindow(WIN)
         sys.exit(0)
-    glutPostRedisplay()  # indispensable en Python
+    # glutPostRedisplay()  # indispensable en Python
     return
 
 ###############################################################
@@ -771,51 +731,208 @@ def tuckey_smooth(grid: list[list], radius: int):
     return grid_copy
 
 
+old_grid = None
+import copy
 def init_random_grid(n):
-    global GRID
+    global grid, old_grid
     random.seed(1)
     grid = [[random.randint(0, 255) for x in range(n)] for x in range(n)]
     grid = tuckey_smooth(grid, 1)
+    old_grid = copy.deepcopy(grid)
     # grid = smooth(grid)
     # rd_line, rd_col = random.randint(0, n - 1), random.randint(0, n - 1)
-    # while rd_line != TARGET[0] and rd_line == START[0]:
+    # while rd_line != target[0] and rd_line == start[0]:
     #     rd_line, rd_col = random.randint(0, n - 1), random.randint(0, n - 1)
     # for j in range(n):
-    #     grid[rd_line][j] = INF
+    #     grid[rd_line][j] = inf
     # grid[rd_line][rd_col] = random.randint(0, 255)
-    GRID = grid
     return
 
-def mouse(btn, state, x, y):
-    global test_g, x_, y_
-    test_g = True
-    print(x,y)
-    height = glutGet(GLUT_WINDOW_HEIGHT)
-    width = glutGet(GLUT_WINDOW_WIDTH)
-    # x, y = x/width, y/height
-    print(x, y, width, height)
-    x_, y_ = x/width*40, y/height*40
-    print(x_, y_)
-    # glPushMatrix()
-    # sph1 = gluNewQuadric()
-    # glTranslatef(x_pos+ x, y_pos+ y, z_pos)
-    # gluSphere(sph1, 1, 5, 5)
-    # glTranslatef(-(x_pos+ x),-(y_pos+ y),-z_pos)
+def to_hex_rgb(r, g, b):
+        """
+        Returns de color in 8bits hexadecimal form in str format
+        """
+        color = [r,g,b]
+        hex_rgb_list = []
+        for x in color:
+            hex_x = hex(x)[2:]
+            if len(hex_x) == 1:
+                hex_x = "0" + hex_x
+            hex_rgb_list.append(hex_x)
+        return "#" + "".join(hex_rgb_list)
 
-    # glPopMatrix()
-    # glPushMatrix()
-    # glLoadIdentity()
-    # # gluLookAt(x_pos, y_pos, z_pos,  # pos camera
-    # #           x_pos, -10 + y_pos, -10 + z_pos,  # look at
-    # #           0, 1, 0)  # up vector
-    # glColor3f(1,0,0)
-    # glTranslatef(-10, -10, 0)
+dico = {}
 
-    # # glFlush()
-    # glutSwapBuffers()
-    # glutPostRedisplay()
+def create_grid(canvas, n: int):
+    global dico
+    width = canvas.winfo_width()
+    height = canvas.winfo_height()
+    x_step = width/n
+    y_step = height/n
+    for i in range(n):
+        for j in range(n):
+            #draw of main square
+            x_0 = i * x_step
+            y_0 = j * y_step
+            col = grid[j][i]
+            col = int(col)
+            str_col = to_hex_rgb(col, col, col)
+            dico[(j, i)] = canvas.create_rectangle(x_0, y_0, x_0 + x_step, y_0 + y_step,
+                                    fill=str_col, width=2, tags="main")
+
+    canvas.tag_bind("main", sequence="<ButtonRelease-1>", func=select_square)
+    canvas.addtag_all("all")
+
+
+selected = []
+path = None
+def draw_path(path):
+    width = canvas.winfo_width()
+    height = canvas.winfo_height()
+    x_step = width/12
+    y_step = height/12
+    x_small_sq_len = x_step/3
+    y_small_sq_len = y_step/3
+    for j, i in path:
+        x_0 = i * x_step + x_small_sq_len
+        y_0 = j * y_step + y_small_sq_len
+        canvas.create_rectangle(x_0, y_0, x_0 + x_small_sq_len,
+                                               y_0 + y_small_sq_len,
+                                        fill="green", width=2, tags="path")
+
+def select_square(event=None):
+    global selected, start, target
+    n = len(selected)
+    if n < 2:
+        id_ = canvas.find_withtag("current")[0]
+        canvas.itemconfigure(id_, fill="purple")
+        canvas.tag_bind(id_, sequence="<ButtonRelease-3>", func=deselect_square)
+        for coord, iden in dico.items():
+            if iden == id_:
+                selected.append(coord)
+                break
+        if len(selected) == 2:
+            start = selected[0]
+            target = selected[1]
+            path = dijkstra_matrix_sorted_dict(grid, start, target)
+            draw_path(path)
+            water_lvl.configure(state=tk.DISABLED)
+
+def deselect_square(event=None):
+    print("ok")
+    id_ = canvas.find_withtag("current")[0]
+    canvas.tag_unbind(id_, sequence="<ButtonRelease-3>")
+    i = 0 if dico[selected[0]] == id_ else 1
+    print(i)
+    j, k = selected[i]
+    col = int(old_grid[j][k])
+    str_col = to_hex_rgb(col, col, col)
+    canvas.itemconfigure(id_, fill=str_col)
+    selected.pop(i)
+    water_lvl.configure(state="readonly")
+    canvas.delete("path")
+width = 0
+height = 0
+# def resize(event):
+#     global width, height
+#     print(event)
+#     if width != curr_width or height != curr_height:
+#         width = canvas.winfo_width()
+#         height = canvas.winfo_height()
+#         # rescale all the objects tagged with the "all" tag
+#         canvas.delete("all")
+#         create_grid(canvas, 12)
+
+def update_grid(*args):
+    global selected, y_water
+    if len(selected) > 0:
+        assert(len(selected)==1)
+        id_ = dico[selected[0]]
+        canvas.tag_unbind(id_, sequence="<ButtonRelease-3>")
+    selected = []
+    lvl = int(water_lvl.get())
+    y_water = lvl
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            y = calculate_height(j, i)
+            print(y, lvl)
+            if y <= lvl:
+                if len(selected) > 0:
+                    if (j,i) != selected[0]:
+                        canvas.itemconfig(dico[j,i], fill="cyan")
+                        grid[j][i] = inf
+                else:
+                    canvas.itemconfig(dico[j,i], fill="cyan")
+                    grid[j][i] = inf
+
+            else:
+                print(grid[i][j])
+                print(old_grid[i][j])
+                grid[j][i] = old_grid[j][i]
+                col = int(grid[j][i])
+                str_col = to_hex_rgb(col, col, col)
+                canvas.itemconfig(dico[j,i], fill=str_col)
+canvas = None
+water_lvl = None
+def home_window(*args):
+    print(*args)
+    global canvas, water_lvl
+    root = tk.Tk()
+    canvas = tk.Canvas(root, width=1024, height=1024)
+    canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=tk.YES)
+    settings = tk.Frame(root, bg="red")
+    settings.pack(side=tk.TOP, fill=tk.BOTH)
+
+    phone = tk.StringVar()
+    img = tk.PhotoImage(file="red.gif")
+    print(img)
+    subframe = tk.Frame(settings)
+    dijkstra = tk.Radiobutton(subframe, selectimage=img, text="Dijkstra",
+                               variable=phone, value="Dijkstra", anchor=tk.W)
+    a_star = tk.Radiobutton(subframe, text="A-star", variable=phone,
+                            value="A-star", anchor=tk.W)
+
+    subframe2 = tk.Frame(settings)
+    phone = tk.StringVar()
+    two_d = tk.Radiobutton(subframe2, selectimage=img, text="2D",
+                           variable=phone, value="2D", anchor=tk.W)
+
+    three_d = tk.Radiobutton(subframe2, text="3D", variable=phone,
+                            value="3D", anchor=tk.W)
+    two_d.pack(side=tk.TOP, fill=tk.X, padx=10)
+    three_d.pack(side=tk.TOP, fill=tk.X,  padx=10)
+
+    label = tk.Label(settings, text="Water level :")
+    label.pack(side=tk.LEFT, fill=tk.BOTH)
+    water_lvl = tk.Spinbox(settings, from_=0, to=10, increment=1, width=2,
+                           command=update_grid, state="readonly")
+    water_lvl.pack(side=tk.LEFT, fill=tk.BOTH, padx=10)
+
+    sep = ttk.Separator(settings, orient=tk.VERTICAL)
+    sep.pack(side=tk.LEFT, fill=tk.BOTH, padx=10)
+
+    dijkstra.pack(side=tk.TOP, fill=tk.X, padx=10)
+    a_star.pack(side=tk.TOP, fill=tk.X,  padx=10)
+    subframe.pack(side=tk.LEFT, padx=10)
+    subframe2.pack(side=tk.LEFT, padx=10)
+
+    sep = ttk.Separator(settings, orient=tk.VERTICAL)
+    sep.pack(side=tk.LEFT, fill=tk.BOTH, padx=10)
+
+    animate = tk.Button(settings, text="Animate")
+    animate.pack(side=tk.LEFT, fill=tk.BOTH, padx=10)
+
+    root.update_idletasks()
+    # root.bind("<Configure>", resize)
+    init_random_grid(12)
+    create_grid(canvas, 12)
+    return root.mainloop()
 
 if __name__ == "__main__":
+    import threading
+    # home_window()
+    x = threading.Thread(target=home_window)
+    x.start()
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA | GLUT_DEPTH)
     WIN = glutCreateWindow('projet')
@@ -823,7 +940,8 @@ if __name__ == "__main__":
     glutDisplayFunc(display)
     glutReshapeFunc(reshape)
     glutKeyboardFunc(keyboard)
-    glutMouseFunc(mouse)
+    # glutMouseFunc(mouse)
     init()
     print(glGetString(GL_VERSION))
     glutMainLoop()
+    print("xddddd")
