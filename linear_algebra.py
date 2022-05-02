@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Objets pour faire des operations en algebre linaire."""
+from math import sqrt
 
 
 class Point(object):
@@ -73,6 +74,23 @@ class Vector(object):
     def translate(self, point: Point):
         """Translate d'un point avec le vecteur."""
         return Point(point.x+self.x, point.y+self.y, point.z+self.z)
+
+    def rescale(self, norm: int):
+        """Rescale self vector to have the norm passed in param."""
+        scale = sqrt(norm / (self.x**2 + self.y**2 + self.z**2))
+        self.x *= scale
+        self.y *= scale
+        self.z *= scale
+        return self
+
+
+def barycenter(a: Point, b: Point, c: Point):
+    """Calculate le barycentre d'un triangle."""
+    v_a = Vector(Point(*a.to_tuple()))
+    v_b = Vector(Point(*b.to_tuple()))
+    v_c = Vector(Point(*c.to_tuple()))
+    sum_ = v_a + v_b + v_c
+    return Point(sum_.x / 3, sum_.y / 3, sum_.z / 3)
 
 
 class LineSegment(object):
