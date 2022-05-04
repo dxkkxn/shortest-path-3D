@@ -26,12 +26,27 @@ class Grid(object):
         """Return the lenght of grid."""
         return len(self.grid)
 
-    def calculate_color(self, i, j):
+    def color(self, i, j):
         """Calcul du color selon la coordonnee (i,j)."""
-        color = self.old_grid[i][j] / 255
-        if color == inf:
-            color = .0
-        return color
+        color = self.old_grid[i][j]
+        color = int(color)
+        height = self.calculate_height(i, j)
+        if height >= 8:
+            # devrait etre une couleur blanchatre
+            return color, color, color
+        elif 8 > height >= 6.5:
+            # brown = (151, 124, 83)
+            mix = (151 + color) // 2, (124 + color) // 2, (83 + color) // 2
+            return mix
+        else:
+            # green = (9, 176, 81)
+            mix = (9 + color) // 2, (176 + color) // 2, (81 + color) // 2
+            return mix
+    def color_std(self, i, j):
+        """Renvoie la color nomalise entre 0..1"""
+        color = self.color(i, j)
+        return color[0] / 255, color[1] / 255, color[2] / 255
+
 
     def calculate_height(self, i, j):
         """Calcul du hauteur selon la coordonnee (i,j)."""
@@ -41,27 +56,30 @@ class Grid(object):
         return y
 
     def calculate_sense(self, p1, p2):
-        """Pp1 --> p2."""
-        y = p2[0] - p1[0]
-        x = p2[1] - p1[1]
-        if x == -1 and y == -1:
+        """p1 --> p2."""
+        i = p2[0] - p1[0]
+        j = p2[1] - p1[1]
+        if i == 1 and j == 1:
             return "rdiagonal down"
-        if x == 1 and y == 1:
+        if i == -1 and j == -1:
             return "rdiagonal up"
-        if x == -1 and y == 1:
+
+        if i == 1 and j == -1:
             return "ldiagonal down"
-        if x == -1 and y == 1:
-            return "ldiagonal down"
-        if x == 1 and y == -1:
-            return "ldiagonal down"
-        if y == 0 and x == -1:
+        if i == -1 and j == 1:
+            print(p1, p2)
+            return "ldiagonal up"
+
+        if i == 0 and j == -1:
             return "horizontal left"
-        if y == 0 and x == 1:
+        if i == 0 and j == 1:
             return "horizontal right"
-        elif y == -1 and x == 0:
-            return "vertical up"
-        elif y == 1 and x == 0:
+
+        if i == 1 and j == 0:
             return "vertical down"
+        elif i == -1 and j == 0:
+            return "vertical up"
+        print(i, j)
         raise TypeError
         return None
 
