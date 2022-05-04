@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
 from grid import Grid
-from opengl_app import Render3D
 from dijkstra import dijkstra_matrix_sorted_dict
 
 inf = float('inf')
@@ -65,10 +64,9 @@ class App(tk.Frame):
                 #draw of main square
                 x_0 = i * x_step
                 y_0 = j * y_step
-                col = grid[j, i]
-                col = int(col)
-                str_col = self.to_hex_rgb(col, col, col)
-                self.dico[(j, i)] = self.canvas.create_rectangle(x_0, y_0, x_0 + x_step, y_0 + y_step,
+                color = grid.color(j, i)
+                str_col = self.to_hex_rgb(*color)
+                self.dico[j, i] = self.canvas.create_rectangle(x_0, y_0, x_0 + x_step, y_0 + y_step,
                                         fill=str_col, width=2, tags="main")
         self.canvas.tag_bind("main", sequence="<ButtonRelease-1>",
                              func=self.select_square)
@@ -77,6 +75,7 @@ class App(tk.Frame):
 
     @staticmethod
     def to_hex_rgb(r, g, b):
+        print(r, g, b)
         """
         Returns de color in 8bits hexadecimal form in str format
         """
@@ -131,8 +130,8 @@ class App(tk.Frame):
         i = 0 if self.dico[self.selected[0]] == id_ else 1
         print(i)
         j, k = self.selected[i]
-        col = int(self.grid[j, k])
-        str_col = self.to_hex_rgb(col, col, col)
+        color = self.grid.color(j, k)
+        str_col = self.to_hex_rgb(*color)
         self.canvas.itemconfigure(id_, fill=str_col)
         self.selected.pop(i)
         self.water_sb.configure(state="readonly")
@@ -159,32 +158,6 @@ class App(tk.Frame):
                         self.grid[j, i] = inf
                 else:
                     self.grid[j, i] = self.grid.old_grid[j][i]
-                    col = int(self.grid[j, i])
-                    str_col = self.to_hex_rgb(col, col, col)
-                    self.canvas.itemconfig(self.dico[j,i], fill=str_col)
-
-
-def home_window(grid_, app3D):
-    print(grid_)
-    root = tk.Tk()
-    main = App(master=root, opengl=app3D)
-    main.pack(side=tk.TOP, expand=tk.YES, fill=tk.BOTH)
-    root.update_idletasks()
-    main.create_grid(grid_)
-    return root.mainloop()
-
-
-if __name__ == "__main__":
-    import threading
-    grid_ = Grid(12, 1)
-    grid_.tuckey_smooth(1)
-
-    app3D = Render3D()
-    app3D.set_grid(grid_)
-    # # path = dijkstra_matrix_sorted_dict(grid_.grid, (0, 11), (11, 0))
-    # app3D.set_path(path)
-    # app3D.mainloop()
-
-    x = threading.Thread(target=app3D.mainloop)
-    x.start()
-    home_window(grid_, app3D)
+                    color = self.grid.color(j, i)
+                    str_col = self.to_hex_rgb(*color)
+                    self.canvas.itemconfig(self.dico[j, i], fill=str_col)

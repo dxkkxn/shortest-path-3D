@@ -93,21 +93,12 @@ def barycenter(a: Point, b: Point, c: Point):
     return Point(sum_.x / 3, sum_.y / 3, sum_.z / 3)
 
 
-class LineSegment(object):
-    """Class pour representer un segment de droite."""
-
-    def __init__(self, point_a: Point, point_b: Point):
-        """Prends en entree deux points."""
-        self.a = point_a
-        self.b = point_b
-
-    def mid_point(self):
-        """Renvoi le milieu du segment."""
-        v_a = Vector(self.a)
-        v_b = Vector(self.b)
-
-        sum_ = v_a + v_b
-        return Point(sum_.x/2, sum_.y/2, sum_.z/2)
+def mid_point(pa, pb):
+    """Renvoi le point au milieu du segment."""
+    v_a = Vector(pa)
+    v_b = Vector(pb)
+    sum_ = v_a + v_b
+    return Point(sum_.x / 2, sum_.y / 2, sum_.z / 2)
 
 
 if __name__ == "__main__":

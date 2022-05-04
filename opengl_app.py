@@ -3,7 +3,7 @@ from OpenGL.GL import *  # car prefixe systematique
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
 from water_rendering import Water # , init_water, water_render
-from linear_algebra import Vector, Point, LineSegment, barycenter
+from linear_algebra import Vector, Point, mid_point, barycenter
 from dijkstra import dijkstra_matrix_sorted_dict
 from bezier import cubic_bezier
 from math import cos, sin
@@ -90,11 +90,11 @@ class Render3D(object):
 
                 # main square draw
                 glBegin(GL_POLYGON)
-                color = self.grid.calculate_color(i, j)
+                color = self.grid.color_std(i, j)
 
                 glNormal3f(0.0, 1.0, 0.0)
-                glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE,
-                             [color, color, color, 1])
+                glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, color)
+                             # [color, color, color, 0])
                 glVertex3f(2 * x, y, 2 * z)
                 glVertex3f(2 * x + 1, y, 2 * z)
                 glVertex3f(2 * x + 1, y, 2 * z + 1)
@@ -109,9 +109,9 @@ class Render3D(object):
                         j_plus1_y = self.grid.calculate_height(i, j + 1)
 
                     glBegin(GL_POLYGON)
-                    color = self.grid.calculate_color(i, j)
-                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE,
-                                [color, color, color, 1])
+                    color = self.grid.color_std(i, j)
+                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, color)
+                                #[color, color, color, 0])
 
                     p0 = Point(2 * x + 1, y, 2 * z)
                     v1 = Vector(p0, Point(2 * x + 2, j_plus1_y, 2 * z))
@@ -122,10 +122,10 @@ class Render3D(object):
                     glNormal3f(*normal.to_tuple())
                     glVertex3f(2 * x + 1, y, 2 * z)
                     glVertex3f(2 * x + 1, y, 2 * z + 1)
-                    color = self.grid.calculate_color(i, j + 1)
+                    color = self.grid.color_std(i, j + 1)
 
-                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE,
-                                [color, color, color, 1])
+                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, color)
+                                # [color, color, color, 0])
                     glVertex3f(2 * x + 2, j_plus1_y, 2 * z + 1)
                     glVertex3f(2 * x + 2, j_plus1_y, 2 * z)
                     glEnd()
@@ -142,16 +142,18 @@ class Render3D(object):
                     normal = v2 ^ v1
                     normal.rescale(1)
                     glNormal3f(*normal.to_tuple())
-                    color = self.grid.calculate_color(i, j)
+                    color = self.grid.color_std(i, j)
 
                     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
-                                [color, color, color, 1])
+                                 color)
+                                # [color, color, color, 0])
                     glVertex3f(2 * x, y, 2 * z + 1)
                     glVertex3f(2 * x + 1, y, 2 * z + 1)
-                    color = self.grid.calculate_color(i + 1, j)
+                    color = self.grid.color_std(i + 1, j)
 
                     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
-                                [color, color, color, 1])
+                                 color)
+                                #[color, color, color, 0])
                     glVertex3f(2 * x + 1, i_plus1_y, 2 * z + 2)
                     glVertex3f(2 * x, i_plus1_y, 2 * z + 2)
                     glNormal3f(0, 1, 0)
@@ -175,22 +177,25 @@ class Render3D(object):
                     normal = v2 ^ v1
                     normal.rescale(1)
                     glNormal3f(*normal.to_tuple())
-                    color = self.grid.calculate_color(i, j)
+                    color = self.grid.color_std(i, j)
 
                     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
-                                [color, color, color, 1])
+                                 color)
+                                #[color, color, color, 0])
                     glVertex3f(2 * x + 1, y, 2 * z + 1)
 
-                    color = self.grid.calculate_color(i + 1, j)
+                    color = self.grid.color_std(i + 1, j)
 
                     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
-                                [color, color, color, 1])
+                                 color)
+                                # [color, color, color, 0])
                     glVertex3f(2 * x + 1, i_plus1_y, 2 * z + 2)
 
-                    color = self.grid.calculate_color(i + 1, j + 1)
+                    color = self.grid.color_std(i + 1, j + 1)
 
                     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
-                                [color, color, color, 1])
+                                 color)
+                                # [color, color, color, 0])
                     glVertex3f(2 * x + 2, ij_plus1_y, 2 * z + 2)
 
                     glNormal3f(0, 1, 0)
@@ -205,21 +210,23 @@ class Render3D(object):
                     normal = v2 ^ v1
                     normal.rescale(1)
                     glNormal3f(*normal.to_tuple())
-                    color = self.grid.calculate_color(i, j)
+                    color = self.grid.color_std(i, j)
                     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
-                                 [color, color, color, 1])
+                                 color)
+                                 # [color, color, color, 0])
                     glVertex3f(2 * x + 1, y, 2 * z + 1)
 
-                    color = self.grid.calculate_color(i, j + 1)
-                    glMaterialfv(
-                        GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [
-                            color, color, color, 1])
+                    color = self.grid.color_std(i, j + 1)
+                    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
+                                 color)
+                        #[color, color, color, 0])
                     glVertex3f(2 * x + 2, j_plus1_y, 2 * z + 1)
 
-                    color = self.grid.calculate_color(i + 1, j + 1)
-                    glMaterialfv(
-                        GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [
-                            color, color, color, 1])
+                    color = self.grid.color_std(i + 1, j + 1)
+                    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
+                                 color)
+                    # [
+                    #         color, color, color, 0])
                     glVertex3f(2 * x + 2, ij_plus1_y, 2 * z + 2)
                     glEnd()
             self.draw_box()
@@ -340,93 +347,109 @@ class Render3D(object):
 
 
     def compute_path_3D(self):
-        """Compute the 3D path using bezier"""
+        """Compute the 3D path using bezier."""
         self.path3D = []
         sz, sx = self.path[0]
         y_s, y_d = 0.5, 0.5
         if self.three_d:
             y_s = (self.grid[sz, sx]) / 255 * 10 + .5
         self.path3D.append(Point(2 * sx + 0.5, y_s, 2 * sz + 0.5))
-        point_prec = Point(2 * sx + 0.5, y_s, 2 * sz + 0.5)
         for i in range(1, len(self.path)):
             sz, sx = self.path[i - 1]
             dz, dx = self.path[i]
             sense = self.grid.calculate_sense(self.path[i - 1], self.path[i])
             print(sense)
+
             y_s, y_d = 0.5, 0.5
             if self.three_d:
                 y_s = (self.grid[sz, sx]) / 255 * 10 + .5
                 y_d = (self.grid[dz, dx]) / 255 * 10 + .5
-            if sense == "horizontal left":
-                self.path3D.append(self.random_point(Point(2 * sx, y_s,
-                                                           2 * sz)))
-                self.path3D.append(self.random_point(Point(2 * sx, y_s,
-                                                           2 * sz)))
 
+            # deux point aleatoires sur le carre courant pricipal
+            self.path3D.append(self.random_point(Point(2 * sx, y_s,
+                                                        2 * sz)))
+            self.path3D.append(self.random_point(Point(2 * sx, y_s,
+                                                        2 * sz)))
+            if sense == "horizontal left":
                 self.path3D.append(Point(2 * sx, y_s, 2 * sz + 0.5))
 
-                segment_sup = LineSegment(Point(2 * sx, y_s, 2 * sz),
-                                          Point(2 * dx + 1, y_d, 2 * dz))
+                mid_sup = mid_point(Point(2 * sx, y_s, 2 * sz),
+                                    Point(2 * dx + 1, y_d, 2 * dz))
+                mid_inf = mid_point(Point(2 * sx + 1, y_s, 2 * sz + 1),
+                                    Point(2 * dx, y_d, 2 * dz + 1))
+                self.path3D.append(mid_sup)
+                self.path3D.append(mid_inf)
 
-                segment_inf = LineSegment(Point(2 * sx + 1, y_s, 2 * sz + 1),
-                                          Point(2 * dx, y_d, 2 * dz + 1))
-
-                mid_p = segment_sup.mid_point()
-                self.path3D.append(mid_p)
-                mid_p = segment_inf.mid_point()
-                self.path3D.append(mid_p)
                 self.path3D.append(Point(2 * dx + 1, y_d, 2 * dz + 0.5))
-            elif sense == "horizontal right":
-                self.path3D.append(Point(2 * sx + 1, y_s, 2 * sz + 0.5))
-                self.path3D.append(Point(2 * dx, y_d, 2 * dz + 0.5))
-            elif sense == "vertical down":
-                self.path3D.append(self.random_point(Point(2 * sx, y_s, 2 * sz)))
-                self.path3D.append(self.random_point(Point(2 * sx, y_s, 2 * sz)))
 
+            elif sense == "horizontal right":
+
+                # s -> d
+                # s_up   d_up
+                # s_mid  d_mid
+                # s_down d_down
+
+                s_up = Point(2 * sx + 1, y_s, 2 * sz)
+                s_mid = Point(2 * sx + 1, y_s, 2 * sz + 0.5)
+                s_down = Point(2 * sx + 1, y_s, 2 * sz + 1)
+                d_up = Point(2 * dx, y_d, 2 * dz)
+                d_mid = Point(2 * dx, y_d, 2 * dz + 0.5)
+                d_down = Point(2 * dx, y_d, 2 * dz + 1)
+                self.path3D.append(s_mid)
+
+                self.path3D.append(mid_point(s_up, d_up))
+                self.path3D.append(mid_point(s_down, d_down))
+
+                self.path3D.append(d_mid)
+
+            elif sense == "vertical down":
                 self.path3D.append(Point(2 * sx + 0.5, y_s, 2 * sz + 1))
 
-                segment_sup = LineSegment(Point(2 * sx, y_s, 2 * sz + 1),
-                                          Point(2 * dx, y_d, 2 * dz))
+                mid_sup = mid_point(Point(2 * sx, y_s, 2 * sz + 1),
+                                    Point(2 * dx, y_d, 2 * dz))
 
-                segment_inf = LineSegment(Point(2 * sx + 1, y_s, 2 * sz + 1),
-                                          Point(2 * dx + 1, y_d, 2 * dz))
+                mid_inf = mid_point(Point(2 * sx + 1, y_s, 2 * sz + 1),
+                                    Point(2 * dx + 1, y_d, 2 * dz))
 
-                mid_p = segment_sup.mid_point()
-                self.path3D.append(mid_p)
-                mid_p = segment_inf.mid_point()
-                self.path3D.append(mid_p)
+                self.path3D.append(mid_sup)
+                self.path3D.append(mid_inf)
 
                 self.path3D.append(Point(2 * dx + 0.5, y_d, 2 * dz))
             elif sense == "vertical up":
-                self.path3D.append(Point(2 * sx + 0.5, y_s, 2 * sz))
-                self.path3D.append(Point(2 * dx + 0.5, y_d, 2 * dz + 1))
+                # s -> d
+                # d_left d_mid d_right
+                # s_left s_mid s_right
+                s_left = Point(2 * sx, y_s, 2 * sz)
+                s_mid = Point(2 * sx + .5, y_s, 2 * sz)
+                s_right = Point(2 * sx + 1, y_s, 2 * sz)
+
+                d_left = Point(2 * dx, y_d, 2 * dz + 1)
+                d_mid = Point(2 * dx + .5, y_d, 2 * dz + 1)
+                d_right = Point(2 * dx + 1, y_d, 2 * dz + 1)
+
+                self.path3D.append(s_mid)
+                self.path3D.append(mid_point(s_left, d_left))
+                self.path3D.append(mid_point(s_right, d_right))
+                self.path3D.append(d_mid)
             elif sense == "ldiagonal down":
                 i, j = self.path[i - 1]
                 left_h = 0.5
                 down_h = 0.5
-
-                p = Point(2 * sx, y_s, 2 * sz)
-                self.path3D.append(self.random_point(p))
-                self.path3D.append(self.random_point(p))
-
                 self.path3D.append(Point(2 * sx, y_s, 2 * sz + 1))
                 if self.three_d:
                     left_h = self.grid.calculate_height(i, j - 1) + .5
-                    print(i+1, j)
                     down_h = self.grid.calculate_height(i + 1, j) + .5
 
                 s_down = Point(2 * sx, down_h, 2 * sz + 2)
                 s_left = Point(2 * sx - 1, left_h, 2 * sz + 1)
-                vertex = (Point(2 * sx, y_s, 2 * sz + 1))
-                seg_down = LineSegment(vertex, s_down)
-                seg_left = LineSegment(vertex, s_left)
+                vertex = Point(2 * sx, y_s, 2 * sz + 1)
 
-                self.path3D.append(seg_down.mid_point())
-                self.path3D.append(seg_left.mid_point())
+                self.path3D.append(mid_point(vertex, s_down))
+                self.path3D.append(mid_point(vertex, s_left))
 
                 mid_p_h = ((2 * sx - 1 + 2 * sx) / 2,
-                        (left_h + down_h) / 2,
-                        (2 * sz + 2 + 2 * sz + 1) / 2)
+                            (left_h + down_h) / 2,
+                            (2 * sz + 2 + 2 * sz + 1) / 2)
                 self.path3D.append(Point(*mid_p_h))
 
                 if self.three_d:
@@ -437,27 +460,67 @@ class Render3D(object):
                 s_left = Point(2 * sx - 1, left_h, 2 * sz + 1)
                 vertex = Point(2 * dx + 1, y_d, 2 * dz)
 
-                seg_down = LineSegment(vertex, s_down)
-                seg_left = LineSegment(vertex, s_left)
-                self.path3D.append(seg_down.mid_point())
-                self.path3D.append(seg_left.mid_point())
+                self.path3D.append(mid_point(vertex, s_down))
+                self.path3D.append(mid_point(vertex, s_left))
 
                 self.path3D.append(Point(2 * dx + 1, y_d, 2 * dz))
             elif sense == "ldiagonal up":
-                self.path3D.append(Point(2 * sx + 1, y_s, 2 * sz))
-                self.path3D.append(Point(2 * dx, y_d, 2 * dz + 1))
+                # s -> diag_mid -> d
+                # s_up        d
+                # s    s_right
+
+                s = Point(2 * sx + 1, y_s, 2 * sz)
+                d = Point(2 * dx, y_d, 2 * dz + 1)
+
+                s_up_y = .5
+                s_right_y = .5
+                if self.three_d:
+                    i, j = self.path[i-1]
+                    s_up_y = self.grid.calculate_height(i - 1, j) + .5
+                    s_right_y = self.grid.calculate_height(i, j + 1) + .5
+
+                s_up = Point(2 * sx + 1, s_up_y, 2 * sz - 1)
+                s_right = Point(2 * sx + 2, s_right_y, 2 * sz)
+
+                self.path3D.append(s)
+                self.path3D.append(mid_point(s, s_up))
+                self.path3D.append(mid_point(s, s_right))
+
+                diag_mid = ((2 * sx + 1 + 2 * sx + 2) / 2,
+                            (s_up_y + s_right_y) / 2,
+                            (2 * sz - 1 + 2 * sz ) / 2)
+                self.path3D.append(Point(*diag_mid))
+
+                self.path3D.append(mid_point(d, s_up))
+                self.path3D.append(mid_point(d, s_right))
+                self.path3D.append(d)
+
             elif sense == "rdiagonal down":
-                self.path3D.append(Point(2 * sx + 1, y_s, 2 * sz + 1))
-                self.path3D.append(Point(2 * dx, y_d, 2 * dz))
+                s = Point(2 * sx + 1, y_s, 2 * sz + 1)
+                d = Point(2 * dx, y_d, 2 * dz)
+                mid_p = mid_point(s, d)
+
+                self.path3D.append(s)
+                self.path3D.append(mid_p)
+                self.path3D.append(mid_p)
+                self.path3D.append(d)
             elif sense == "rdiagonal up":
-                self.path3D.append(Point(2 * sx, y_d, 2 * sz))
+                self.path3D.append(Point(2 * sx, y_s, 2 * sz))
+                mid_p = mid_point(Point(2 * sx + 1, y_s, 2 * sz + 1),
+                                  Point(2 * dx, y_d, 2 * dz))
+
+                self.path3D.append(mid_p)
+                self.path3D.append(mid_p)
                 self.path3D.append(Point(2 * dx + 1, y_d, 2 * dz + 1))
         sz, sx = self.path[-1]
         y_s, y_d = 0.5, 0.5
         if self.three_d:
             y_s = (self.grid[sz, sx]) / 255 * 10 + .5
-        self.path3D.append(self.random_point(Point(2 * sx, y_s, 2 * sz)))
-        self.path3D.append(self.random_point(Point(2 * sx, y_s, 2 * sz)))
+
+        self.path3D.append(self.random_point(Point(2 * sx, y_s,
+                                                    2 * sz)))
+        self.path3D.append(self.random_point(Point(2 * sx, y_s,
+                                                    2 * sz)))
 
         self.path3D.append(Point(2 * sx + 0.5, y_s, 2 * sz + 0.5))
         tmp = []
@@ -529,7 +592,8 @@ class Render3D(object):
                 gluSphere(self.sph1, 0.4, 100, 80)
                 glTranslatef(-x, -y, -z)
 
-            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [1, 1, 1, 1])
+            glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
+                         [1, 1, 1, 1])
             glEnable(GL_BLEND)
             glBlendFunc(GL_ONE, GL_SRC_ALPHA)
             glEnable(GL_TEXTURE_2D)
@@ -668,9 +732,8 @@ class Render3D(object):
 
                     a = Point(2 * x + 1, y, 2 * z)
                     b = Point(2 * x + 2, j_plus1_y, 2 * z + 1)
-                    seg = LineSegment(a, b)
                     # center of the rectangle
-                    cx, cy, cz = seg.mid_point().to_tuple()
+                    cx, cy, cz = mid_point(a, b).to_tuple()
                     glTranslatef(cx, cy, cz)
                     gluSphere(self.sph1, 0.1, 5, 5)
                     glTranslatef(-cx, -cy, -cz)
@@ -693,9 +756,8 @@ class Render3D(object):
                     normal = v2 ^ v1
                     a = Point(2 * x, y, 2 * z + 1)
                     b = Point(2 * x + 1, i_plus1_y, 2 * z + 2)
-                    seg = LineSegment(a, b)
                     # centre du rectangle
-                    cx, cy, cz = seg.mid_point().to_tuple()
+                    cx, cy, cz = mid_point(a, b).to_tuple()
                     glTranslatef(cx, cy, cz)
                     gluSphere(self.sph1, 0.1, 5, 5)
                     glTranslatef(-cx, -cy, -cz)
