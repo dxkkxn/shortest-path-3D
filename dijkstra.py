@@ -162,6 +162,8 @@ def dijkstra_matrix_heap(grid, start: tuple, target: tuple):
     while True:
         # found the vertex with smallest weight
         w, (curr_i, curr_j) = heapq.heappop(weight_heap)
+        if w == inf:
+            raise ValueError("No path found")
         if (curr_i, curr_j) == target :
             break;
         mark.add((curr_i, curr_j))
@@ -180,7 +182,8 @@ def dijkstra_matrix_deque(grid, start: tuple, target: tuple):
     while True:
         # found the vertex with smallest weight
         w, (curr_i, curr_j) = weight_deque.popleft()
-        assert(w != inf)
+        if w == inf:
+            raise ValueError("No path found")
         if (curr_i, curr_j) == target :
             break;
         mark.add((curr_i, curr_j))
@@ -200,7 +203,9 @@ def dijkstra_matrix_sorted_dict(grid, start: tuple, target: tuple):
         # get the vertex with smallest weight
         curr_weight, vertex_set = sorted_weight.popitem(index=0)
         (v_i, v_j) = vertex_set.pop()
-        if (v_i, v_j) == target :
+        if curr_weight == inf:
+            raise ValueError("No path found")
+        if (v_i, v_j) == target:
             break
         mark.add((v_i, v_j))
         if len(vertex_set) != 0:
