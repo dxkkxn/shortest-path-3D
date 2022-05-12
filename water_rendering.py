@@ -194,13 +194,13 @@ def water_render(size, y_lvl):
     return
 
 class Water(object):
-    def __init__(self, resolution, y=-1, *args, **kwargs):
+    def __init__(self, resolution, size, y=-1, *args, **kwargs):
         self.res = resolution
         self.surface = [0 for i in range(6 * self.res * (self.res + 1))]
         self.normal = [0 for i in range(6 * self.res * (self.res + 1))]
         self.display_normals = False
         self.wire_frame = False
-        self.size = 0
+        self.size = size
         self.y = y
         self.init_textures()
 
@@ -212,9 +212,9 @@ class Water(object):
         """Change water level."""
         self.y = y
 
-    def set_size(self, size):
-        """Set the size of water starting at 0, 0, 0."""
-        self.size = size
+    # def set_size(self, size):
+    #     """Set the size of water starting at 0, 0, 0."""
+    #     self.size = size
 
     def init_textures(self):
         """Initialise des textures."""

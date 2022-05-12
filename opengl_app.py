@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
+#
 from OpenGL.GL import *  # car prefixe systematique
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-from water_rendering import Water # , init_water, water_render
+from water_rendering import Water
 from linear_algebra import Vector, Point, mid_point, barycenter
 from dijkstra import dijkstra_matrix_sorted_dict
 from bezier import cubic_bezier
@@ -11,11 +12,11 @@ from grid import Grid
 import random
 
 
-
 class Render3D(object):
     """OpenGL application."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, grid, water_res=34, *args, **kwargs):
+        """Initialise a glut window."""
         glutInit(*args, **kwargs)
         glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA | GLUT_DEPTH)
         glutCreateWindow('projet')
@@ -23,21 +24,26 @@ class Render3D(object):
         glutDisplayFunc(self.display)
         glutReshapeFunc(self.reshape)
         glutKeyboardFunc(self.keyboard)
-        # glutMouseFunc(mouse)
+
         self.initgl()
-        self.water = Water(resolution=34)
-        print(glGetString(GL_VERSION))
         self.x_cam, self.y_cam, self.z_cam = 0, 10, 10
         self.sph1 = gluNewQuadric()
         self.display_grid_toggle = False
         self.grid = None
-        self.three_d = False
+        self.three_d = True
         self.display_normals = False
         self.path = None
         self.path3D = None
         self.display_path = False
         self.animation = False
         self.x_look_at, self.y_look_at, self.z_look_at = 0, 0, 0
+
+        self.grid = grid
+        x = len(grid)
+        self.water = Water(resolution=water_res, size=len(grid) * 2)
+        self.x_look_at = x
+        self.z_look_at = x
+
 
     def set_water_height(self, x):
         self.water.y = x
@@ -86,7 +92,7 @@ class Render3D(object):
                 x, z = (j, i)
                 y = 0
                 if self.three_d:
-                    y = self.grid.calculate_height(i, j)
+                    y = self.grid.height(i, j)
 
                 # main square draw
                 glBegin(GL_POLYGON)
@@ -106,7 +112,7 @@ class Render3D(object):
                     i_plus1_y = 0
                     j_plus1_y = 0
                     if self.three_d:
-                        j_plus1_y = self.grid.calculate_height(i, j + 1)
+                        j_plus1_y = self.grid.height(i, j + 1)
 
                     glBegin(GL_POLYGON)
                     color = self.grid.color_std(i, j)
@@ -134,7 +140,7 @@ class Render3D(object):
                 if i + 1 < len(self.grid):
                     i_plus1_y = 0
                     if self.three_d:
-                        i_plus1_y = self.grid.calculate_height(i + 1, j)
+                        i_plus1_y = self.grid.height(i + 1, j)
                     glBegin(GL_POLYGON)
                     p0 = Point(2 * x, y, 2 * z + 1)
                     v1 = Vector(p0, Point(2 * x + 1, y, 2 * z + 1))
@@ -164,9 +170,9 @@ class Render3D(object):
                     i_plus1_y = 0
                     j_plus1_y = 0
                     if self.three_d:
-                        ij_plus1_y = self.grid.calculate_height(i + 1, j + 1)
-                        i_plus1_y = self.grid.calculate_height(i + 1, j)
-                        j_plus1_y = self.grid.calculate_height(i, j + 1)
+                        ij_plus1_y = self.grid.height(i + 1, j + 1)
+                        i_plus1_y = self.grid.height(i + 1, j)
+                        j_plus1_y = self.grid.height(i, j + 1)
 
                     glBegin(GL_POLYGON)
                     v0 = Vector(Point(2 * x + 1, y, 2 * z + 1))
@@ -229,7 +235,8 @@ class Render3D(object):
                     #         color, color, color, 0])
                     glVertex3f(2 * x + 2, ij_plus1_y, 2 * z + 2)
                     glEnd()
-            self.draw_box()
+
+            # self.draw_box()
 
     @staticmethod
     def triangulate(polygon):
@@ -269,13 +276,11 @@ class Render3D(object):
         gluTessEndPolygon(tess)
         gluDeleteTess(tess)
         return vertices
-        # draw of bottom box for more beautiful display
-        self.draw_box()
 
     def draw_triangles(self, vertices):
         """Draw triangles."""
         glBegin(GL_TRIANGLES)
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, [1, 1, 1, 1])
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, (0, 0, 0))
         glColor(1, 0, 0)
         for vertex in vertices:
             glVertex(*vertex)
@@ -295,7 +300,7 @@ class Render3D(object):
             z = i
             y = 0
             if self.three_d:
-                y = self.grid.calculate_height(i, 0)
+                y = self.grid.height(i, 0)
             pts.append((0, y, 2 * z))
             pts.append((0, y, 2 * z + 1))
         pts.append((0, -2, 2 * (n - 1) + 1))
@@ -309,7 +314,7 @@ class Render3D(object):
             z = i
             y = 0
             if self.three_d:
-                y = self.grid.calculate_height(z, x)
+                y = self.grid.height(z, x)
             pts.append((2 * x + 1, y, 2 * z))
             pts.append((2 * x + 1, y, 2 * z + 1))
         pts.append((2 * (n - 1) + 1, -2, 2 * (n - 1) + 1))
@@ -323,7 +328,7 @@ class Render3D(object):
             z = n - 1
             y = 0
             if self.three_d:
-                y = self.grid.calculate_height(z, x)
+                y = self.grid.height(z, x)
             p1 = (2 * x, y, 2 * z + 1)
             p2 = (2 * x + 1, y, 2 * z + 1)
             pts.append(p1)
@@ -339,7 +344,7 @@ class Render3D(object):
             z = 0
             y = 0
             if self.three_d:
-                y = self.grid.calculate_height(z, x)
+                y = self.grid.height(z, x)
             pts.append((2 * x, y, 2 * z))
             pts.append((2 * x + 1, y, 2 * z))
         pts.append((2 * (n - 1) + 1, -2, 0))
@@ -437,8 +442,8 @@ class Render3D(object):
                 down_h = 0.5
                 self.path3D.append(Point(2 * sx, y_s, 2 * sz + 1))
                 if self.three_d:
-                    left_h = self.grid.calculate_height(i, j - 1) + .5
-                    down_h = self.grid.calculate_height(i + 1, j) + .5
+                    left_h = self.grid.height(i, j - 1) + .5
+                    down_h = self.grid.height(i + 1, j) + .5
 
                 s_down = Point(2 * sx, down_h, 2 * sz + 2)
                 s_left = Point(2 * sx - 1, left_h, 2 * sz + 1)
@@ -453,8 +458,8 @@ class Render3D(object):
                 self.path3D.append(Point(*mid_p_h))
 
                 if self.three_d:
-                    left_h = self.grid.calculate_height(i, j - 1) + .5
-                    down_h = self.grid.calculate_height(i + 1, j) + .5
+                    left_h = self.grid.height(i, j - 1) + .5
+                    down_h = self.grid.height(i + 1, j) + .5
 
                 s_down = Point(2 * sx, down_h, 2 * sz + 2)
                 s_left = Point(2 * sx - 1, left_h, 2 * sz + 1)
@@ -476,8 +481,8 @@ class Render3D(object):
                 s_right_y = .5
                 if self.three_d:
                     i, j = self.path[i-1]
-                    s_up_y = self.grid.calculate_height(i - 1, j) + .5
-                    s_right_y = self.grid.calculate_height(i, j + 1) + .5
+                    s_up_y = self.grid.height(i - 1, j) + .5
+                    s_right_y = self.grid.height(i, j + 1) + .5
 
                 s_up = Point(2 * sx + 1, s_up_y, 2 * sz - 1)
                 s_right = Point(2 * sx + 2, s_right_y, 2 * sz)
@@ -608,18 +613,6 @@ class Render3D(object):
         glutPostRedisplay()
         return
 
-
-    def set_grid(self, grid):
-        """Sets the grid"""
-        self.grid = grid
-        x = len(grid)
-        self.water.set_size(len(grid)*2)
-        self.x_look_at = x
-        self.z_look_at = x
-    def set_path(self, path):
-        """Sets the grid"""
-        self.grid = path
-
     def keyboard(self, key, x, y):
         """Control keyboards inputs."""
         if key == b'h':
@@ -677,6 +670,24 @@ class Render3D(object):
         glutPostRedisplay()  # indispensable en Python
         return
 
+    def start_animation(self):
+        if self.animation:
+            print("Animation already in progress")
+            return
+        if not self.path3D:
+            print("No known path")
+            return
+        self.animation = True
+        self.move_worm = 0
+        n = len(self.path3D)
+        x, y, z = self.path3D[self.move_worm % n].to_tuple()
+        self.x_look_at = x
+        self.y_look_at = y
+        self.z_look_at = z
+        self.x_cam, self.y_cam, self.z_cam = x, y + 4, z - 4
+        for i in range(len(self.path3D)):
+            glutTimerFunc(1000+(i*100), self.animate, None)
+
     def animate(self, event):
         """Start the animation."""
         n = len(self.path3D)
@@ -703,7 +714,7 @@ class Render3D(object):
                 x, z = (j, i)
                 y = 0
                 if self.three_d:
-                    y = self.grid.calculate_height(i, j)
+                    y = self.grid.height(i, j)
                 glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [1, 0, 0, 1])
                 # draw of main squares
                 # centre of de square
@@ -723,7 +734,7 @@ class Render3D(object):
                 j_plus1_y = 0
                 if j + 1 < len(self.grid):
                     if self.three_d:
-                        j_plus1_y = self.grid.calculate_height(i, j + 1)
+                        j_plus1_y = self.grid.height(i, j + 1)
 
                     p0 = Point(2 * x + 1, y, 2 * z)
                     v1 = Vector(p0, Point(2 * x + 2, j_plus1_y, 2 * z))
@@ -748,7 +759,7 @@ class Render3D(object):
                 if i + 1 < len(self.grid):
                     i_plus1_y = 0
                     if self.three_d:
-                        i_plus1_y = self.grid.calculate_height(i + 1, j)
+                        i_plus1_y = self.grid.height(i + 1, j)
                     # vertical rectangles
                     p0 = Point(2 * x, y, 2 * z + 1)
                     v1 = Vector(p0, Point(2 * x + 1, y, 2 * z + 1))
@@ -774,9 +785,9 @@ class Render3D(object):
                     i_plus1_y = 0
                     j_plus1_y = 0
                     if self.three_d:
-                        ij_plus1_y = self.grid.calculate_height(i + 1, j + 1)
-                        i_plus1_y = self.grid.calculate_height(i + 1, j)
-                        j_plus1_y = self.grid.calculate_height(i, j + 1)
+                        ij_plus1_y = self.grid.height(i + 1, j + 1)
+                        i_plus1_y = self.grid.height(i + 1, j)
+                        j_plus1_y = self.grid.height(i, j + 1)
 
                     p0 = (Point(2 * x + 1, y, 2 * z + 1))
                     v1 = Vector(p0, Point(2 * x + 2, j_plus1_y, 2 * z + 1))
@@ -858,7 +869,6 @@ class Render3D(object):
 
         glEnd()
         return
-
 
     def set_path(self, path):
         self.path = path
