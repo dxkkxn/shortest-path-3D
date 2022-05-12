@@ -1,85 +1,122 @@
+"""MVC pattern for tk application."""
 import tkinter as tk
 from tkinter import ttk
-from grid import Grid
 from dijkstra import dijkstra_matrix_sorted_dict
 
 inf = float('inf')
 
-class App(tk.Frame):
-    def __init__(self, master, opengl, *args, **kwargs):
+
+class TkView(tk.Frame):
+    """View for the tkinter application."""
+
+    def __init__(self, master, *args, **kwargs):
+        """Initialise les widgets sur l'application."""
         super().__init__(master, *args, **kwargs)
-        self.opengl_app = opengl
         self.canvas = tk.Canvas(self, width=1024, height=1024)
         self.canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=tk.YES)
-        self.settings = tk.Frame(self, bg="red")
+        self.settings = tk.Frame(self)
         self.settings.pack(side=tk.TOP, fill=tk.BOTH)
 
         phone = tk.StringVar()
         subframe = tk.Frame(self.settings)
-        dijkstra = tk.Radiobutton(subframe, text="Dijkstra",
-                                  variable=phone, value="Dijkstra", anchor=tk.W)
-        a_star = tk.Radiobutton(subframe, text="A-star", variable=phone,
-                                value="A-star", anchor=tk.W)
+        self.dijkstra = tk.Radiobutton(subframe, text="Dijkstra",
+                                       variable=phone, value="Dijkstra",
+                                       anchor=tk.W)
+        self.a_star = tk.Radiobutton(subframe, text="A-star", variable=phone,
+                                     value="A-star", anchor=tk.W)
 
         subframe2 = tk.Frame(self.settings)
         phone = tk.StringVar()
-        two_d = tk.Radiobutton(subframe2, text="2D",
-                            variable=phone, value="2D", anchor=tk.W)
+        self.two_d = tk.Radiobutton(subframe2, text="2D", variable=phone,
+                                    value="2D", anchor=tk.W)
+        self.three_d = tk.Radiobutton(subframe2, text="3D", variable=phone,
+                                      value="3D", anchor=tk.W)
 
-        three_d = tk.Radiobutton(subframe2, text="3D", variable=phone,
-                                value="3D", anchor=tk.W)
-        two_d.pack(side=tk.TOP, fill=tk.X, padx=10)
-        three_d.pack(side=tk.TOP, fill=tk.X,  padx=10)
+        self.two_d.pack(side=tk.TOP, fill=tk.X, padx=10)
+        self.three_d.pack(side=tk.TOP, fill=tk.X, padx=10)
 
         label = tk.Label(self.settings, text="Water level :")
         label.pack(side=tk.LEFT, fill=tk.BOTH)
-        self.water_sb = tk.Spinbox(self.settings, from_=0, to=10, increment=1, width=2,
-                            command=self.update_grid, state="readonly")
+        self.water_sb = tk.Spinbox(self.settings, from_=-1, to=10, increment=1,
+                                   width=2, state="readonly")
         self.water_sb.pack(side=tk.LEFT, fill=tk.BOTH, padx=10)
 
         sep = ttk.Separator(self.settings, orient=tk.VERTICAL)
         sep.pack(side=tk.LEFT, fill=tk.BOTH, padx=10)
 
-        dijkstra.pack(side=tk.TOP, fill=tk.X, padx=10)
-        a_star.pack(side=tk.TOP, fill=tk.X,  padx=10)
+        self.dijkstra.pack(side=tk.TOP, fill=tk.X, padx=10)
+        self.a_star.pack(side=tk.TOP, fill=tk.X, padx=10)
         subframe.pack(side=tk.LEFT, padx=10)
         subframe2.pack(side=tk.LEFT, padx=10)
 
         sep = ttk.Separator(self.settings, orient=tk.VERTICAL)
         sep.pack(side=tk.LEFT, fill=tk.BOTH, padx=10)
 
-        animate = tk.Button(self.settings, text="Animate")
-        animate.pack(side=tk.LEFT, fill=tk.BOTH, padx=10)
+        self.animate = tk.Button(self.settings, text="Animate")
+        self.animate.pack(side=tk.LEFT, fill=tk.BOTH, padx=10)
 
-    def create_grid(self, grid):
-        self.grid = grid
-        n = len(self.grid)
+
+class AppController():
+    """Controller for the tkinter application."""
+
+    def __init__(self, master, model, opengl_app):
+        """Initialise the viegrid."""
+        self.view = TkView(master)
+        self.view.pack(side=tk.TOP, fill=tk.BOTH, expand=tk.YES)
+        self.grid = model
+        self.width = self.view.canvas.winfo_width()
+        self.height = self.view.canvas.winfo_height()
+        self.view.canvas.bind("<Configure>", self.resize)
+        self.view.water_sb.config(command=self.update_grid)
+        # dict to store link des id of rectangles to their coord
         self.dico = {}
-        self.width = self.canvas.winfo_width()
-        self.height = self.canvas.winfo_height()
-        x_step = self.width/n
-        y_step = self.height/n
+        self.create_grid()
+        self.opengl = opengl_app
+        self.selected = []  # vertex selected in canvas
+        self.view.dijkstra.invoke()
+        self.view.three_d.invoke()
+        self.view.animate.bind("<ButtonRelease-1>", self.animate)
+        return
+
+    def animate(self, event=None):
+        """Strats the animation in the opengl window."""
+        self.opengl.start_animation()
+
+
+    def resize(self, event=None):
+        """If window size changed adapt the canvas rectangles."""
+        width = self.view.canvas.winfo_width()
+        height = self.view.canvas.winfo_height()
+        self.dico = {}
+        if width != self.width or height != self.height:
+            self.width, self.height = width, height
+            self.view.canvas.delete("all")
+            self.create_grid()
+
+    def create_grid(self):
+        """Draw the rectangles in the canvas."""
+        n = len(self.grid)
+        x_step = self.width / n
+        y_step = self.height / n
         for i in range(n):
             for j in range(n):
-                #draw of main square
+                # draw of main square
                 x_0 = i * x_step
                 y_0 = j * y_step
-                color = grid.color(j, i)
+                color = self.grid.color(j, i)
                 str_col = self.to_hex_rgb(*color)
-                self.dico[j, i] = self.canvas.create_rectangle(x_0, y_0, x_0 + x_step, y_0 + y_step,
-                                        fill=str_col, width=2, tags="main")
-        self.canvas.tag_bind("main", sequence="<ButtonRelease-1>",
-                             func=self.select_square)
-        self.canvas.addtag_all("all")
-        self.selected = []
+                rect = self.view.canvas.\
+                    create_rectangle(x_0, y_0, x_0 + x_step, y_0 + y_step,
+                                     fill=str_col, width=2) #, tags="main")
+                self.dico[rect] = (j, i)
+                self.view.canvas.tag_bind(rect, sequence="<ButtonRelease-1>",
+                                          func=self.select_square)
+        self.view.canvas.addtag_all("all")
 
     @staticmethod
-    def to_hex_rgb(r, g, b):
-        print(r, g, b)
-        """
-        Returns de color in 8bits hexadecimal form in str format
-        """
-        color = [r,g,b]
+    def to_hex_rgb(r, g, b) -> str:
+        """Return de color in 8bits hexadecimal (str)."""
+        color = [r, g, b]
         hex_rgb_list = []
         for x in color:
             hex_x = hex(x)[2:]
@@ -89,75 +126,91 @@ class App(tk.Frame):
         return "#" + "".join(hex_rgb_list)
 
     def draw_path(self):
-        """Draws the path with green rectangles"""
-        x_step = self.width / 12
-        y_step = self.height / 12
-        x_small_sq_len = x_step/3
-        y_small_sq_len = y_step/3
+        """Draw the path with green rectangles."""
+        n = len(self.grid)
+        x_step = self.width / n
+        y_step = self.height / n
+        x_small_sq_len = x_step / 3
+        y_small_sq_len = y_step / 3
         for j, i in self.path:
             x_0 = i * x_step + x_small_sq_len
             y_0 = j * y_step + y_small_sq_len
-            self.canvas.create_rectangle(x_0, y_0, x_0 + x_small_sq_len,
-                                         y_0 + y_small_sq_len, fill="green",
+            self.view.canvas.create_oval(x_0, y_0, x_0 + x_small_sq_len,
+                                         y_0 + y_small_sq_len, fill="red",
                                          width=2, tags="path")
 
     def select_square(self, event=None):
         """Change square color when a square has been clicked."""
-        n = len(self.selected)
-        if n < 2:
-            id_ = self.canvas.find_withtag("current")[0]
-            self.canvas.itemconfigure(id_, fill="purple")
-            self.canvas.tag_bind(id_, sequence="<ButtonRelease-3>",
-                                 func=self.deselect_square)
-            for coord, iden in self.dico.items():
-                if iden == id_:
-                    self.selected.append(coord)
-                    break
-            if len(self.selected) == 2:
-                start = self.selected[0]
-                target = self.selected[1]
-                self.path = dijkstra_matrix_sorted_dict(self.grid.grid,
-                                                        start, target)
-                self.opengl_app.set_path(self.path)
-                self.opengl_app.display_path = True
+        id_ = self.view.canvas.find_withtag("current")[0]
+        self.view.canvas.itemconfigure(id_, fill="purple")
+        self.view.canvas.tag_bind(id_, sequence="<ButtonRelease-3>",
+                                  func=self.deselect_square)
 
-                self.draw_path()
-                self.water_sb.configure(state=tk.DISABLED)
+        self.selected.append(self.dico[id_])
+
+        if len(self.selected) >= 2:
+            self.path = self.compute_dijkstra()
+            self.draw_path()
+            self.opengl.set_path(self.path)
+            self.opengl.display_path = True
+        self.view.water_sb.configure(state=tk.DISABLED)
+
+    def compute_dijkstra(self):
+        """Compute the dijkstra path for self.selected points."""
+        path = []
+        for i in range(1, len(self.selected)):
+            start = self.selected[i - 1]
+            target = self.selected[i]
+            if len(path) != 0:
+                path.pop(-1)  # Eliminate last vertex to avoid repetion
+                # last vertex of previous path is the first vertex of next path
+            path.extend(dijkstra_matrix_sorted_dict(self.grid, start, target))
+        return path
 
     def deselect_square(self, event=None):
-        id_ = self.canvas.find_withtag("current")[0]
-        self.canvas.tag_unbind(id_, sequence="<ButtonRelease-3>")
-        i = 0 if self.dico[self.selected[0]] == id_ else 1
-        print(i)
-        j, k = self.selected[i]
-        color = self.grid.color(j, k)
+        """Deselect a square and delete it from selected."""
+        id_ = self.view.canvas.find_withtag("current")[0]
+        self.view.canvas.tag_unbind(id_, sequence="<ButtonRelease-3>")
+        self.selected.remove(self.dico[id_])
+        color = self.grid.color(*self.dico[id_])
         str_col = self.to_hex_rgb(*color)
-        self.canvas.itemconfigure(id_, fill=str_col)
-        self.selected.pop(i)
-        self.water_sb.configure(state="readonly")
-        self.canvas.delete("path")
+        self.view.canvas.itemconfigure(id_, fill=str_col)
+        self.view.canvas.delete("path")
+        self.view.water_sb.configure(state="disabled")
+        if len(self.selected) >= 2:
+            self.path = self.compute_dijkstra()
+            self.draw_path()
+        if len(self.selected) == 0:
+            self.view.water_sb.configure(state="readonly")
 
-    def update_grid(self):
-        if len(self.selected) > 0:
-            assert(len(self.selected) == 1)
-            id_ = self.dico[self.selected[0]]
-            self.canvas.tag_unbind(id_, sequence="<ButtonRelease-3>")
-        self.selected = []
-        lvl = int(self.water_sb.get())
-        self.opengl_app.set_water_height(lvl)
+    def _get_rect_id_in(self, pos):
+        assert(len(self.dico)==576)
+        for id_, coord in self.dico.items():
+            if coord == pos:
+                return id_
+        raise KeyError("Not found")
+
+    def update_grid(self, event=None):
+        """Update colors in grid in relation to water level."""
+        assert(len(self.selected) == 0)
+        self.view.update_idletasks()
+        lvl = int(self.view.water_sb.get())
+        self.opengl.set_water_height(lvl)
         for i in range(len(self.grid)):
             for j in range(len(self.grid)):
-                y = self.grid.calculate_height(j, i)
+                y = self.grid.height(j, i)
+                id_ = self._get_rect_id_in((j, i))
                 if y <= lvl:
-                    if len(self.selected) > 0:
-                        if (j, i) != self.selected[0]:
-                            self.canvas.itemconfig(self.dico[j, i], fill="cyan")
-                            self.grid[j, i] = inf
-                    else:
-                        self.canvas.itemconfig(self.dico[j, i], fill="cyan")
-                        self.grid[j, i] = inf
+                    self.view.canvas.itemconfig(id_, fill="#007577")
+                    self.view.canvas.tag_unbind(id_,
+                                                "<ButtonRelease-1>")
+                    self.grid[j, i] = inf
                 else:
-                    self.grid[j, i] = self.grid.old_grid[j][i]
+                    self.grid[j, i] = self.grid.old(j, i)
                     color = self.grid.color(j, i)
                     str_col = self.to_hex_rgb(*color)
-                    self.canvas.itemconfig(self.dico[j, i], fill=str_col)
+                    self.view.canvas.itemconfig(id_, fill=str_col)
+                    self.view.canvas.tag_bind(id_,
+                                              "<ButtonRelease-1>",
+                                              func=self.select_square)
+                                              # func=self.select_square)
