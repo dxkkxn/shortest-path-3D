@@ -30,6 +30,7 @@ class Grid(object):
 
     def __setitem__(self, key, val):
         """Mis a jour d'element designe par key."""
+        assert(isinstance(val, float) or isinstance(val, int))
         if isinstance(key, tuple) and len(key) == 2:
             i, j = key
             if i >= len(self.grid):
@@ -40,6 +41,15 @@ class Grid(object):
         else:
             raise ValueError("key type not valid only tuple")
 
+    def __str__(self):
+        """Prints grid."""
+        res = ""
+        for i in range(len(self.grid)):
+            res += str(self.grid[i])
+            res += "\n"
+        return res
+
+
     def __len__(self):
         """Return the lenght of grid."""
         return len(self.grid)
@@ -48,7 +58,7 @@ class Grid(object):
         """Return color according the coord (i,j)."""
         color = self.old_grid[i][j]
         color = int(color)
-        height = self.calculate_height(i, j)
+        height = self.height(i, j)
         if height >= 8:
             # devrait etre une couleur blanchatre
             return color, color, color
@@ -97,6 +107,9 @@ class Grid(object):
         raise TypeError(f"p1 = {p1[0], p1[1]}, p2 = {p2[0], p2[1]}")
         return None
 
+    def old(self, i, j):
+        """Return old value of grid without infs."""
+        return self.old_grid[i][j]
 
     def tuckey_smooth(self, radius: int):
         grid_copy = copy.deepcopy(self.grid)
