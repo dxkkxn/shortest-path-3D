@@ -4,16 +4,15 @@ from collections import deque
 from sortedcontainers import SortedDict
 import bisect
 
-INF = float('inf')
-def cost(grid: list[list], v1i: int, v1j: int, v2i: int, v2j: int):
-    """
-        cost to go from v1 vertex to v2 vertex
-    """
-    #we detect a diagonal mouvement
-    if abs(v1i-v2i) and abs(v1j-v2j) :
-        weight = math.sqrt(2) * abs((grid[v1i][v1j] + grid[v2i][v2j])/2)
+inf = float('inf')
+
+def cost(grid, v1i: int, v1j: int, v2i: int, v2j: int):
+    """Cost to go from v1 vertex to v2 vertex."""
+    # we detect a diagonal mouvement
+    if abs(v1i - v2i) and abs(v1j - v2j):
+        weight = math.sqrt(2) * ((grid[v1i][v1j] + grid[v2i][v2j]) / 2)
     else:
-        weight = abs((grid[v1i][v1j] + grid[v2i][v2j])/2)
+        weight = (grid[v1i][v1j] + grid[v2i][v2j]) / 2
     return weight
 
 def get_path(prev: dict, start: tuple, target: tuple):
@@ -29,7 +28,7 @@ def get_path(prev: dict, start: tuple, target: tuple):
     return path
 
 
-def check_neighbours_sd(grid: list[list], i: int, j: int, weight: dict,
+def check_neighbours_sd(grid, i: int, j: int, weight: dict,
                         sorted_weight: SortedDict, prev: dict, mark: set):
     """
     for each neighbour of i, j if a new path is found update the parameters
@@ -37,15 +36,16 @@ def check_neighbours_sd(grid: list[list], i: int, j: int, weight: dict,
     """
     len_l = len(grid)
     len_c = len(grid[0])
-    dep = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1,-1), (1, 0), (1,1)]
-    for v,h in dep:
-        ni, nj = i+v, j+h #neighbour (ni, nj)
-        if 0 <=ni < len_l and 0 <=nj < len_c and (ni, nj) not in mark:
+    dep = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0),
+           (1, 1)]
+    for v, h in dep:
+        ni, nj = i + v, j + h  # neighbour (ni, nj)
+        if 0 <= ni < len_l and 0 <= nj < len_c and (ni, nj) not in mark:
             curr_weight = weight[i, j] + cost(grid, i, j, ni, nj)
             old_w = weight[ni, nj]
             if curr_weight < old_w:
                 if curr_weight not in sorted_weight:
-                    sorted_weight[curr_weight] = set([(ni, nj),])
+                    sorted_weight[curr_weight] = set([(ni, nj), ])
                 else:
                     sorted_weight[curr_weight].add((ni, nj))
                 weight[ni, nj] = curr_weight
@@ -56,18 +56,22 @@ def check_neighbours_sd(grid: list[list], i: int, j: int, weight: dict,
                 prev[(ni, nj)] = (i, j)
     return
 
-def check_neighbours(grid: list[list], i: int, j: int, weight: dict,
-                     weight_heap: list, prev: dict, mark: dict):
+
+def check_neighbours(grid, i: int, j: int, weight: dict, weight_heap: list,
+                     prev: dict, mark: dict):
     """
+    Check neighbours.
+
     for each neighbour of i, j if a new path is found update the parameters
     (weight, weight_heap, prev, mark)
     """
     len_l = len(grid)
     len_c = len(grid[0])
-    dep = [(-1, -1), (-1, 0), (-1, 1),(0, -1), (0, 1), (1,-1), (1, 0), (1,1)]
-    for v,h in dep:
-        ni, nj = i+v, j+h #neighbour (ni, nj)
-        if  0 <= ni < len_l and 0 <= nj < len_c and (ni, nj) not in mark:
+    dep = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0),
+           (1, 1)]
+    for v, h in dep:
+        ni, nj = i + v, j + h  # neighbour (ni, nj)
+        if 0 <= ni < len_l and 0 <= nj < len_c and (ni, nj) not in mark:
             curr_weight = weight[i, j] + cost(grid, i, j, ni, nj)
             if curr_weight < weight[ni, nj]:
                 heapq.heappush(weight_heap, (curr_weight, (ni, nj)))
@@ -75,13 +79,14 @@ def check_neighbours(grid: list[list], i: int, j: int, weight: dict,
                 prev[(ni, nj)] = (i, j)
     return
 
-def check_neighbours_dq(grid: list[list], i: int, j: int, weight: dict,
+def check_neighbours_dq(grid, i: int, j: int, weight: dict,
                         weight_dq: deque, prev: dict, mark: set):
     len_l = len(grid)
     len_c = len(grid[0])
-    dep = [(-1, -1), (-1, 0), (-1, 1),(0, -1), (0, 1), (1,-1), (1, 0), (1,1)]
-    for v,h in dep:
-        ni, nj = i+v, j+h #neighbour (ni, nj)
+    dep = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0),
+           (1, 1)]
+    for v, h in dep:
+        ni, nj = i + v, j + h  # neighbour (ni, nj)
         if 0 <= ni < len_l and 0 <= nj < len_c and (ni, nj) not in mark:
             curr_weight = weight[i, j] + cost(grid, i, j, ni, nj)
             w = weight[ni, nj]
@@ -93,7 +98,7 @@ def check_neighbours_dq(grid: list[list], i: int, j: int, weight: dict,
     return
 
 
-def init_all_vertex(grid: list[list], weight: dict, weight_heap: list,
+def init_all_vertex(grid, weight: dict, weight_heap: list,
                     start: tuple):
     """
     Initialition of all vertex weight to +infinity except start vertex,
@@ -103,13 +108,13 @@ def init_all_vertex(grid: list[list], weight: dict, weight_heap: list,
     len_c = len(grid[0])
     for i in range(len_l):
         for j in range(len_c):
-            heapq.heappush(weight_heap, (INF, (i,j)))
-            weight[(i, j)] = INF
+            heapq.heappush(weight_heap, (inf, (i,j)))
+            weight[(i, j)] = inf
     weight[start] = 0
     heapq.heappush(weight_heap, (0, start))
     return
 
-def init_all_vertex_sd(grid: list[list], weight: dict,
+def init_all_vertex_sd(grid, weight: dict,
                        sorted_weight: SortedDict, start: tuple):
     """
     Initialition of all vertex weight to +infinity except start vertex,
@@ -117,17 +122,17 @@ def init_all_vertex_sd(grid: list[list], weight: dict,
     """
     len_l = len(grid)
     len_c = len(grid[0])
-    sorted_weight[INF] = set()
+    sorted_weight[inf] = set()
     for i in range(len_l):
         for j in range(len_c):
-            weight[(i, j)] = INF
-            sorted_weight[INF].add((i, j))
-    sorted_weight[INF].remove(start)
+            weight[(i, j)] = inf
+            sorted_weight[inf].add((i, j))
+    sorted_weight[inf].remove(start)
     sorted_weight[0] = set([start,])
     weight[start] = 0
     return
 
-def init_all_vertex_deque(grid: list[list], weight: dict, weight_deque: deque,
+def init_all_vertex_deque(grid, weight: dict, weight_deque: deque,
                           start: tuple):
     """
     Initialisation of all vertex weight to +infinity
@@ -136,15 +141,15 @@ def init_all_vertex_deque(grid: list[list], weight: dict, weight_deque: deque,
     len_c = len(grid[0])
     for i in range(len_l):
         for j in range(len_c):
-            weight_deque.append((INF, (i,j)))
-            weight[(i, j)] = INF
-    weight_deque.remove((INF, start))
+            weight_deque.append((inf, (i,j)))
+            weight[(i, j)] = inf
+    weight_deque.remove((inf, start))
     weight_deque.appendleft((0, start))
     weight[start] = 0
     return
 
 
-def dijkstra_matrix_heap(grid: list[list], start: tuple, target: tuple):
+def dijkstra_matrix_heap(grid, start: tuple, target: tuple):
     weight_heap = []
     weight = {}
     mark = set()
@@ -160,7 +165,7 @@ def dijkstra_matrix_heap(grid: list[list], start: tuple, target: tuple):
         check_neighbours(grid, curr_i, curr_j, weight, weight_heap, prev, mark)
     return get_path(prev, start, target)
 
-def dijkstra_matrix_deque(grid: list[list], start: tuple, target: tuple):
+def dijkstra_matrix_deque(grid, start: tuple, target: tuple):
     weight_deque = deque()
     weight = {}
     mark = set()
@@ -169,7 +174,7 @@ def dijkstra_matrix_deque(grid: list[list], start: tuple, target: tuple):
     while True:
         # found the vertex with smallest weight
         w, (curr_i, curr_j) = weight_deque.popleft()
-        assert(w != INF)
+        assert(w != inf)
         if (curr_i, curr_j) == target :
             break;
         mark.add((curr_i, curr_j))
@@ -177,7 +182,7 @@ def dijkstra_matrix_deque(grid: list[list], start: tuple, target: tuple):
         check_neighbours_dq(grid, curr_i, curr_j, weight, weight_deque, prev, mark)
     return get_path(prev, start, target)
 
-def dijkstra_matrix_sorted_dict(grid: list[list], start: tuple, target: tuple):
+def dijkstra_matrix_sorted_dict(grid, start: tuple, target: tuple):
     sorted_weight = SortedDict()
     weight = {}
     prev = {}
