@@ -5,29 +5,47 @@ inf = float('inf')
 
 class Grid(object):
     def __init__(self, size: int, seed: int):
+        """Intialise the a grid of size size according the seed."""
         random.seed(seed)
         self.grid = [[random.randint(0, 255) for x in range(size)]
                      for x in range(size)]
-        # self.grid = tuckey_smooth(grid, 1)
-        # self.old_grid = copy.deepcopy(grid)
 
     def __getitem__(self, key: tuple):
-        assert(isinstance(key, tuple) and len(key) == 2)
-        i, j = key
-        return self.grid[i][j]
-    def __setitem__(self, key: tuple, val):
-        assert(isinstance(key, tuple) and len(key) == 2)
-        i, j = key
-        self.grid[i][j] = val
-        return self.grid[i][j]
+        """Retourne l'element designe par key."""
+        # La key peut etre un tuple ou un entier
+        if isinstance(key, tuple) and len(key) == 2:
+            i, j = key
+            if i >= len(self.grid):
+                raise IndexError("First index out of range")
+            if j >= len(self.grid[0]):
+                raise IndexError("Seconde index out of range")
+            return self.grid[i][j]
 
+        elif (isinstance(key, int)):
+            if key >= len(self.grid[0]):
+                raise IndexError("First index out of range")
+            return self.grid[key]
+        else:
+            raise ValueError("key type not valid only tuple and int")
+
+    def __setitem__(self, key, val):
+        """Mis a jour d'element designe par key."""
+        if isinstance(key, tuple) and len(key) == 2:
+            i, j = key
+            if i >= len(self.grid):
+                raise IndexError("First index out of range")
+            if j >= len(self.grid[0]):
+                raise IndexError("Seconde index out of range")
+            self.grid[i][j] = val
+        else:
+            raise ValueError("key type not valid only tuple")
 
     def __len__(self):
         """Return the lenght of grid."""
         return len(self.grid)
 
     def color(self, i, j):
-        """Calcul du color selon la coordonnee (i,j)."""
+        """Return color according the coord (i,j)."""
         color = self.old_grid[i][j]
         color = int(color)
         height = self.calculate_height(i, j)
@@ -42,18 +60,15 @@ class Grid(object):
             # green = (9, 176, 81)
             mix = (9 + color) // 2, (176 + color) // 2, (81 + color) // 2
             return mix
+
     def color_std(self, i, j):
-        """Renvoie la color nomalise entre 0..1"""
+        """Return the normalised color between 0..1."""
         color = self.color(i, j)
         return color[0] / 255, color[1] / 255, color[2] / 255
 
-
-    def calculate_height(self, i, j):
-        """Calcul du hauteur selon la coordonnee (i,j)."""
-        y = self.old_grid[i][j] / 255 * 10
-        if y == inf:
-            y = 0
-        return y
+    def height(self, i, j):
+        """Return the height of the coord (i,j)."""
+        return self.old_grid[i][j] / 255 * 10
 
     def calculate_sense(self, p1, p2):
         """p1 --> p2."""
@@ -79,9 +94,9 @@ class Grid(object):
             return "vertical down"
         elif i == -1 and j == 0:
             return "vertical up"
-        print(i, j)
-        raise TypeError
+        raise TypeError(f"p1 = {p1[0], p1[1]}, p2 = {p2[0], p2[1]}")
         return None
+
 
     def tuckey_smooth(self, radius: int):
         grid_copy = copy.deepcopy(self.grid)
