@@ -19,3 +19,7 @@ données similiare en python de base.
 ### Tests unitaires
 Sur le dossiers tests se situent tous les tests unitaires
 
+
+S'il vous plait envoyez vos retours sur ce projet et les points à 
+améliorer qu'on n'est pas à courir après vous pour les retours comme le
+semestre dernier.
