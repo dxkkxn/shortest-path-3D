@@ -43,7 +43,15 @@ class Render3D(object):
         self.water = Water(resolution=water_res, size=len(grid) * 2)
         self.x_look_at = x
         self.z_look_at = x
+        self.stop = False
 
+    def set_grid(self, grid):
+        """Update the grid."""
+        self.grid = grid
+        x = len(grid)
+        self.water.set_size(len(grid)*2)
+        self.x_look_at = x
+        self.z_look_at = x
 
     def set_water_height(self, x):
         self.water.y = x
@@ -236,7 +244,7 @@ class Render3D(object):
                     glVertex3f(2 * x + 2, ij_plus1_y, 2 * z + 2)
                     glEnd()
 
-            # self.draw_box()
+            self.draw_box()
 
     @staticmethod
     def triangulate(polygon):
@@ -350,6 +358,9 @@ class Render3D(object):
         pts.append((2 * (n - 1) + 1, -2, 0))
         self.draw_triangles(self.triangulate(pts))
 
+    def redisplay(self):
+        glutPostRedisplay()
+
 
     def compute_path_3D(self):
         """Compute the 3D path using bezier."""
@@ -363,7 +374,6 @@ class Render3D(object):
             sz, sx = self.path[i - 1]
             dz, dx = self.path[i]
             sense = self.grid.calculate_sense(self.path[i - 1], self.path[i])
-            print(sense)
 
             y_s, y_d = 0.5, 0.5
             if self.three_d:

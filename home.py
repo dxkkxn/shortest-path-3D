@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk
 from dijkstra import dijkstra_matrix_sorted_dict
 from grid import Grid
+import random
 
 inf = float('inf')
 
@@ -12,10 +13,11 @@ class TkSettingsView(tk.Toplevel):
 
     def __init__(self, *args, **kwargs):
         """Initialise the settings toplevel."""
-        super().__init__()
-        self.grid_size_scale = tk.Scale(self, from_=2, to_=100,
+        super().__init__(*args, **kwargs)
+        self.grid_size_scale = tk.Scale(self, from_=2, to_=50,
                                         label="Grid size",
-                                        orient=tk.HORIZONTAL, tickinterval=20)
+                                        orient=tk.HORIZONTAL, tickinterval=10)
+        self.grid_size_scale.set(20)
         self.grid_size_scale.pack(side=tk.TOP, fill=tk.X, anchor=tk.W)
         smooth_algorithm = tk.Label(self, text="Smoothing algorithm:",
                                     anchor=tk.W)
@@ -26,7 +28,7 @@ class TkSettingsView(tk.Toplevel):
                                      variable=self.phone, value="Tuckey",
                                      anchor=tk.CENTER, indicatoron=0)
         self.average = tk.Radiobutton(frame, text="Average", variable=self.phone,
-                                      value="A-star", anchor=tk.CENTER,
+                                      value="Average", anchor=tk.CENTER,
                                       indicatoron=0)
         self.tuckey.pack(side=tk.LEFT)
         self.average.pack(side=tk.LEFT)
@@ -37,18 +39,46 @@ class TkSettingsView(tk.Toplevel):
                                             orient=tk.HORIZONTAL,
                                             tickinterval=2)
         self.radius_smooth_scale.pack(side=tk.TOP, fill=tk.X)
+        self.radius_smooth_scale.set(1)
 
-        self.water_res_scale = tk.Scale(self, from_=0, to_=100,
+        self.water_res_scale = tk.Scale(self, from_=0, to_=64,
                                         label="Water resolution (3D)",
-                                        orient=tk.HORIZONTAL, tickinterval=20)
+                                        orient=tk.HORIZONTAL, tickinterval=16)
+        self.water_res_scale.set(10)
         self.water_res_scale.pack(side=tk.TOP, fill=tk.X)
         self.phone.set("Tuckey")
+        self.seed_scale = tk.Scale(self, from_=0, to_=1000,
+                                   label="Seed",
+                                   orient=tk.HORIZONTAL, tickinterval=400)
+        self.seed_scale.set(random.randint(0,1000))
+        self.seed_scale.pack(side=tk.TOP, fill=tk.X)
         self.validate = tk.Button(self, text="Create")
         self.validate.pack(side=tk.TOP)
         self.grab_set()
 
 
 class TkSettingsController():
+    """Controller for the TkSettingsView."""
+
+    def __init__(self, *args, **kwargs):
+        """Bind events to widgets."""
+        self.view = TkSettingsView()
+        self.view.validate.config(command=self.get_and_destroy)
+
+    def get_and_destroy(self):
+        """Get all settings and destroy the window."""
+        self.size = self.view.grid_size_scale.get()
+        self.phone = self.view.phone.get()
+        self.radius = self.view.radius_smooth_scale.get()
+        self.res = self.view.water_res_scale.get()
+        self.seed = self.view.seed_scale.get()
+        self.view.destroy()
+
+    def get(self):
+        """Get values set."""
+        return (self.size, self.phone, self.radius, self.res, self.seed)
+
+
 class TkView(tk.Frame):
     """View for the tkinter application."""
 
@@ -125,13 +155,29 @@ class AppController():
         self.view.three_d.invoke()
         self.view.animate.config(command=self.animate)
         self.view.change_grid.config(command=self.open_settings)
+        self.master = master
         return
 
     def open_settings(self):
+        """Creates a topleve with all avaible settings."""
         print("ok")
-        settings = TkSettingsView()
-        self.grid = Grid(100, 100)
-        self.grid.tuckey_smooth(1)
+        settings = TkSettingsController()
+        self.master.wait_window(settings.view)
+        size, phone, radius, res, seed = settings.get()
+        self.grid = Grid(size, seed)
+        print(phone)
+        if phone == "Tuckey":
+            self.grid.tuckey_smooth(radius)
+        else:
+            assert(phone == "Average")
+            self.grid.smooth(radius)
+        self.view.canvas.delete("all")
+        self.dico = {}  # reset dico
+        self.create_grid()
+        self.stop = True
+        self.opengl.set_grid(self.grid)
+        self.opengl.redisplay()
+        self.stop = False
 
 
     def animate(self, event=None):

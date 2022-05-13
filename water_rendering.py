@@ -212,6 +212,8 @@ class Water(object):
         """Change water level."""
         self.y = y
 
+    def set_size(self, size):
+        self.size = size
     # def set_size(self, size):
     #     """Set the size of water starting at 0, 0, 0."""
     #     self.size = size

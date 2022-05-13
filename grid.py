@@ -112,6 +112,7 @@ class Grid(object):
         return self.old_grid[i][j]
 
     def tuckey_smooth(self, radius: int):
+        """Tuckey (median) smooth."""
         grid_copy = copy.deepcopy(self.grid)
         dep = [x for x in range(-radius, radius + 1)]
         length = len(self.grid)
@@ -133,20 +134,21 @@ class Grid(object):
         self.grid = grid_copy
         self.old_grid = copy.deepcopy(self.grid)
 
-    def smooth(grid):
-        grid_copy = copy.deepcopy(grid)
-        dv = [-1, 0, 1]
-        dh = [-1, 0, 1]
-        for i in range(len(grid)):
-            for j in range(len(grid)):
+    def smooth(self, radius):
+        """Average smooth."""
+        grid_copy = copy.deepcopy(self.grid)
+        dep = [x for x in range(-radius, radius + 1)]
+        for i in range(len(self.grid)):
+            for j in range(len(self.grid)):
                 neighbours = 0
                 sum_neigh = 0
-                for v in dv:
-                    for h in dh:
-                        if v != 0 and h != 0 and 0 <= i + v < len(grid) \
-                        and 0 <= j + h < len(grid):
-                            sum_neigh += grid[i + v][j + h]
+                for v in dep:
+                    for h in dep:
+                        if v != 0 and h != 0 and 0 <= i + v < len(self.grid) \
+                        and 0 <= j + h < len(self.grid):
+                            sum_neigh += self.grid[i + v][j + h]
                             neighbours += 1
                 grid_copy[i][j] = sum_neigh / neighbours
 
-        return grid_copy
+        self.grid = grid_copy
+        self.old_grid = copy.deepcopy(self.grid)
