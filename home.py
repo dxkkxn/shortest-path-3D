@@ -2,16 +2,64 @@
 import tkinter as tk
 from tkinter import ttk
 from dijkstra import dijkstra_matrix_sorted_dict
+from grid import Grid
 
 inf = float('inf')
 
 
+class TkSettingsView(tk.Toplevel):
+    """Tk toplevel window for the settings."""
+
+    def __init__(self, *args, **kwargs):
+        """Initialise the settings toplevel."""
+        super().__init__()
+        self.grid_size_scale = tk.Scale(self, from_=2, to_=100,
+                                        label="Grid size",
+                                        orient=tk.HORIZONTAL, tickinterval=20)
+        self.grid_size_scale.pack(side=tk.TOP, fill=tk.X, anchor=tk.W)
+        smooth_algorithm = tk.Label(self, text="Smoothing algorithm:",
+                                    anchor=tk.W)
+        smooth_algorithm.pack(side=tk.TOP, fill=tk.X)
+        self.phone = tk.StringVar()
+        frame = tk.Frame(self, bg="red")
+        self.tuckey = tk.Radiobutton(frame, text="Tuckey",
+                                     variable=self.phone, value="Tuckey",
+                                     anchor=tk.CENTER, indicatoron=0)
+        self.average = tk.Radiobutton(frame, text="Average", variable=self.phone,
+                                      value="A-star", anchor=tk.CENTER,
+                                      indicatoron=0)
+        self.tuckey.pack(side=tk.LEFT)
+        self.average.pack(side=tk.LEFT)
+        frame.pack(side=tk.TOP)  #,fill=tk.X, expand=tk.TRUE)
+
+        self.radius_smooth_scale = tk.Scale(self, from_=0, to_=10,
+                                            label="Smooth radius",
+                                            orient=tk.HORIZONTAL,
+                                            tickinterval=2)
+        self.radius_smooth_scale.pack(side=tk.TOP, fill=tk.X)
+
+        self.water_res_scale = tk.Scale(self, from_=0, to_=100,
+                                        label="Water resolution (3D)",
+                                        orient=tk.HORIZONTAL, tickinterval=20)
+        self.water_res_scale.pack(side=tk.TOP, fill=tk.X)
+        self.phone.set("Tuckey")
+        self.validate = tk.Button(self, text="Create")
+        self.validate.pack(side=tk.TOP)
+        self.grab_set()
+
+
+class TkSettingsController():
 class TkView(tk.Frame):
     """View for the tkinter application."""
 
     def __init__(self, master, *args, **kwargs):
         """Initialise les widgets sur l'application."""
         super().__init__(master, *args, **kwargs)
+        top_frame = tk.Frame(master)
+        self.change_grid = tk.Button(top_frame, text="Change grid")
+        top_frame.pack(side=tk.TOP, fill=tk.X)
+        self.change_grid.pack(side=tk.LEFT)
+
         self.canvas = tk.Canvas(self, width=1024, height=1024)
         self.canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=tk.YES)
         self.settings = tk.Frame(self)
@@ -68,20 +116,27 @@ class AppController():
         self.height = self.view.canvas.winfo_height()
         self.view.canvas.bind("<Configure>", self.resize)
         self.view.water_sb.config(command=self.update_grid)
-        # dict to store link des id of rectangles to their coord
+        # dict to store link the ids of rectangles to their coord
         self.dico = {}
         self.create_grid()
         self.opengl = opengl_app
         self.selected = []  # vertex selected in canvas
         self.view.dijkstra.invoke()
         self.view.three_d.invoke()
-        self.view.animate.bind("<ButtonRelease-1>", self.animate)
+        self.view.animate.config(command=self.animate)
+        self.view.change_grid.config(command=self.open_settings)
         return
+
+    def open_settings(self):
+        print("ok")
+        settings = TkSettingsView()
+        self.grid = Grid(100, 100)
+        self.grid.tuckey_smooth(1)
+
 
     def animate(self, event=None):
         """Strats the animation in the opengl window."""
         self.opengl.start_animation()
-
 
     def resize(self, event=None):
         """If window size changed adapt the canvas rectangles."""
@@ -107,7 +162,7 @@ class AppController():
                 str_col = self.to_hex_rgb(*color)
                 rect = self.view.canvas.\
                     create_rectangle(x_0, y_0, x_0 + x_step, y_0 + y_step,
-                                     fill=str_col, width=2) #, tags="main")
+                                     fill=str_col, width=2)  #, tags="main")
                 self.dico[rect] = (j, i)
                 self.view.canvas.tag_bind(rect, sequence="<ButtonRelease-1>",
                                           func=self.select_square)
@@ -184,7 +239,7 @@ class AppController():
             self.view.water_sb.configure(state="readonly")
 
     def _get_rect_id_in(self, pos):
-        assert(len(self.dico)==576)
+        assert(len(self.dico) == 576)
         for id_, coord in self.dico.items():
             if coord == pos:
                 return id_
