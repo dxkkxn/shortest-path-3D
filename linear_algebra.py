@@ -83,6 +83,10 @@ class Vector(object):
         self.z *= scale
         return self
 
+    def norm(self):
+        """Calulate the norm."""
+        return sqrt(self.x**2 + self.y**2 + self.z**2)
+
 
 def barycenter(a: Point, b: Point, c: Point):
     """Calculate le barycentre d'un triangle."""
