@@ -108,7 +108,6 @@ class Render3D(object):
 
                 glNormal3f(0.0, 1.0, 0.0)
                 glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, color)
-                             # [color, color, color, 0])
                 glVertex3f(2 * x, y, 2 * z)
                 glVertex3f(2 * x + 1, y, 2 * z)
                 glVertex3f(2 * x + 1, y, 2 * z + 1)
@@ -125,7 +124,6 @@ class Render3D(object):
                     glBegin(GL_POLYGON)
                     color = self.grid.color_std(i, j)
                     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, color)
-                                #[color, color, color, 0])
 
                     p0 = Point(2 * x + 1, y, 2 * z)
                     v1 = Vector(p0, Point(2 * x + 2, j_plus1_y, 2 * z))
@@ -357,6 +355,7 @@ class Render3D(object):
             pts.append((2 * x + 1, y, 2 * z))
         pts.append((2 * (n - 1) + 1, -2, 0))
         self.draw_triangles(self.triangulate(pts))
+
 
     def redisplay(self):
         glutPostRedisplay()
@@ -620,7 +619,8 @@ class Render3D(object):
         glutSwapBuffers()
         glFlush()
         glutSwapBuffers()
-        glutPostRedisplay()
+        if self.stop is False:
+            glutPostRedisplay()
         return
 
     def keyboard(self, key, x, y):

@@ -159,9 +159,9 @@ class AppController():
         return
 
     def open_settings(self):
-        """Creates a topleve with all avaible settings."""
-        print("ok")
+        """Create a topleve with all avaible settings."""
         settings = TkSettingsController()
+        self.opengl.stop = True
         self.master.wait_window(settings.view)
         size, phone, radius, res, seed = settings.get()
         self.grid = Grid(size, seed)
@@ -174,10 +174,9 @@ class AppController():
         self.view.canvas.delete("all")
         self.dico = {}  # reset dico
         self.create_grid()
-        self.stop = True
         self.opengl.set_grid(self.grid)
+        self.opengl.stop = False
         self.opengl.redisplay()
-        self.stop = False
 
 
     def animate(self, event=None):
@@ -208,7 +207,7 @@ class AppController():
                 str_col = self.to_hex_rgb(*color)
                 rect = self.view.canvas.\
                     create_rectangle(x_0, y_0, x_0 + x_step, y_0 + y_step,
-                                     fill=str_col, width=2)  #, tags="main")
+                                     fill=str_col, width=2)  #,tags="main")
                 self.dico[rect] = (j, i)
                 self.view.canvas.tag_bind(rect, sequence="<ButtonRelease-1>",
                                           func=self.select_square)
@@ -285,7 +284,6 @@ class AppController():
             self.view.water_sb.configure(state="readonly")
 
     def _get_rect_id_in(self, pos):
-        assert(len(self.dico) == 576)
         for id_, coord in self.dico.items():
             if coord == pos:
                 return id_
