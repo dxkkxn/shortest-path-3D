@@ -44,6 +44,7 @@ class Vector(object):
         self.y = self.a.y-self.b.y
         self.z = self.a.z-self.b.z
 
+
     def __sub__(self, v1):
         """Soustraction des 2 vecteurs."""
         return Vector(Point(self.x-v1.x, self.y-v1.y, self.z-v1.z))

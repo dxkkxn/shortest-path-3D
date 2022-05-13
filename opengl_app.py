@@ -9,7 +9,7 @@ from dijkstra import dijkstra_matrix_sorted_dict
 from bezier import cubic_bezier
 from math import cos, sin
 from grid import Grid
-from snake import Snake
+from worm import Worm
 import random
 
 
@@ -601,8 +601,8 @@ class Render3D(object):
                 gluQuadricNormals(self.sph1, GLU_SMOOTH)
                 gluQuadricTexture(self.sph1, GL_TRUE)
                 n = len(self.path3D)
-                self.snake.move(self.path3D[self.move_worm % n])
-                for pos in self.snake.get_positions():
+                self.worm.move(self.path3D[self.move_worm % n])
+                for pos in self.worm.get_positions():
                     x, y, z = pos.to_tuple()
                     glTranslatef(x, y, z)
                     gluSphere(self.sph1, 0.5, 100, 80)
@@ -886,7 +886,7 @@ class Render3D(object):
         self.path = path
         self.compute_path_3D()
         initial_pos = self.path3D[0]
-        self.snake = Snake(5, initial_pos)
+        self.worm = Worm(20, initial_pos)
 
 
 
