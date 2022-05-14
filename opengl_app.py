@@ -26,9 +26,9 @@ class Render3D(object):
         glutDisplayFunc(self.display)
         glutReshapeFunc(self.reshape)
         glutKeyboardFunc(self.keyboard)
+        glutSpecialFunc(self.special_keyboard)
 
         self.initgl()
-        self.x_cam, self.y_cam, self.z_cam = 0, 10, 10
         self.sph1 = gluNewQuadric()
         self.display_grid_toggle = False
         self.grid = None
@@ -47,6 +47,8 @@ class Render3D(object):
         self.x_look_at = x
         self.z_look_at = x
         self.stop = False
+
+        self.x_cam, self.y_cam, self.z_cam = x-1, 15, x * 2
 
     def set_grid(self, grid):
         """Update the grid."""
@@ -97,6 +99,23 @@ class Render3D(object):
         glDisable(GL_TEXTURE_2D)
         self.load_worm_texture()
         return
+    def special_keyboard(self, key, x, y):
+        if key == GLUT_KEY_UP:
+            self.y_cam += 1
+        elif key == GLUT_KEY_DOWN:
+            self.y_cam -= 1
+        elif key == GLUT_KEY_LEFT:
+            x, z = self.x_cam - self.x_look_at, self.z_cam - self.z_look_at
+            self.x_cam = x * cos(0.1) - z * sin(0.1)
+            self.z_cam = z * cos(0.1) + x * sin(0.1)
+            self.x_cam += self.x_look_at
+            self.z_cam += self.z_look_at
+        elif key == GLUT_KEY_RIGHT:
+            x, z = self.x_cam - self.x_look_at, self.z_cam - self.z_look_at
+            self.x_cam = x * cos(-0.1) - z * sin(-0.1)
+            self.z_cam = z * cos(-0.1) + x * sin(-0.1)
+            self.x_cam += self.x_look_at
+            self.z_cam += self.z_look_at
 
     def display_ground(self):
         for i in range(len(self.grid)):
@@ -705,6 +724,10 @@ class Render3D(object):
         elif key == b'n':
             self.display_normals = not self.display_normals
             self.water.set_normals(self.display_normals)
+        elif key == b'w':
+            self.z_cam += 1
+        elif key == b's':
+            self.z_cam -= 1
         elif key == b'd':
             self.display_path = not self.display_path
         elif key == b'u':
@@ -714,7 +737,6 @@ class Render3D(object):
             if self.animation:
                 print("Animation already in progress")
                 return
-
             if not self.path3D:
                 print("No known path")
                 return
@@ -735,6 +757,8 @@ class Render3D(object):
         glutPostRedisplay()  # indispensable en Python
         return
 
+
+
     def start_animation(self):
         if self.animation:
             print("Animation already in progress")
@@ -749,9 +773,10 @@ class Render3D(object):
         self.x_look_at = x
         self.y_look_at = y
         self.z_look_at = z
-        self.x_cam, self.y_cam, self.z_cam = x, y + 4, z - 4
+        self.x_cam, self.y_cam, self.z_cam = x, y + 10, z + 2
         for i in range(len(self.path3D)):
             glutTimerFunc(1000+(i*100), self.animate, None)
+        print("finished")
 
     def animate(self, event):
         """Start the animation."""
@@ -768,6 +793,8 @@ class Render3D(object):
             # set look at center point of the model
             self.x_look_at = len(self.grid)
             self.z_look_at = len(self.grid)
+            x = len(self.grid)
+            self.x_cam, self.y_cam, self.z_cam = x-1, 15, x * 2
             self.animation = False
         self.move_worm += 1
 
