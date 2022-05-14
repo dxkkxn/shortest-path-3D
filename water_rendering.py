@@ -51,147 +51,148 @@ def load_texture(filename):
 
 x_pos, y_pos, z_pos = 0, 10, 10
 
-def water_render(size, y_lvl):
-    t = glutGet(GLUT_ELAPSED_TIME) / 1000.
-    delta = (size - 1) / self.res
-    length = 2 * (RESOLUTION + 1)
-    xn = (RESOLUTION + 1) * delta + 1
-    for j in range(RESOLUTION):
-        y = (j + 1) * delta - 1
-        for i in range(RESOLUTION + 1):
-            indice = 6 * (i + j * (RESOLUTION + 1))
-            x = i * delta - 1
-            surface[indice + 3] = x
-            surface[indice + 4] = z(x, y, t)
-            surface[indice + 5] = y
-            if j != 0:
-                # Values were computed during the previous loop
-                preindice = 6 * (i + (j - 1) * (RESOLUTION + 1))
-                surface[indice] = surface[preindice + 3]
-                surface[indice + 1] = surface[preindice + 4]
-                surface[indice + 2] = surface[preindice + 5]
-            else:
-                surface[indice] = x
-                surface[indice + 1] = z(x, -1, t)
-                surface[indice + 2] = -1
+# def water_render(size, y_lvl):
+#     t = glutGet(GLUT_ELAPSED_TIME) / 1000.
+#     delta = (size - 1) / self.res
+#     length = 2 * (RESOLUTION + 1)
+#     xn = (RESOLUTION + 1) * delta + 1
+#     for j in range(RESOLUTION):
+#         y = (j + 1) * delta - 1
+#         for i in range(RESOLUTION + 1):
+#             indice = 6 * (i + j * (RESOLUTION + 1))
+#             x = i * delta - 1
+#             surface[indice + 3] = x
+#             surface[indice + 4] = z(x, y, t)
+#             surface[indice + 5] = y
+#             if j != 0:
+#                 # Values were computed during the previous loop
+#                 preindice = 6 * (i + (j - 1) * (RESOLUTION + 1))
+#                 surface[indice] = surface[preindice + 3]
+#                 surface[indice + 1] = surface[preindice + 4]
+#                 surface[indice + 2] = surface[preindice + 5]
+#             else:
+#                 surface[indice] = x
+#                 surface[indice + 1] = z(x, -1, t)
+#                 surface[indice + 2] = -1
 
-    # Normals
-    for j in range(RESOLUTION):
-        for i in range(RESOLUTION + 1):
-            indice = 6 * (i + j * (RESOLUTION + 1))
+#     # Normals
+#     for j in range(RESOLUTION):
+#         for i in range(RESOLUTION + 1):
+#             indice = 6 * (i + j * (RESOLUTION + 1))
 
-            v1x = surface[indice + 3]
-            v1y = surface[indice + 4]
-            v1z = surface[indice + 5]
+#             v1x = surface[indice + 3]
+#             v1y = surface[indice + 4]
+#             v1z = surface[indice + 5]
 
-            v2x = v1x
-            v2y = surface[indice + 1]
-            v2z = surface[indice + 2]
+#             v2x = v1x
+#             v2y = surface[indice + 1]
+#             v2z = surface[indice + 2]
 
-            if i < RESOLUTION:
-                v3x = surface[indice + 9]
-                v3y = surface[indice + 10]
-                v3z = v1z
-            else:
-                v3x = xn
-                v3y = z(xn, v1z, t)
-                v3z = v1z
+#             if i < RESOLUTION:
+#                 v3x = surface[indice + 9]
+#                 v3y = surface[indice + 10]
+#                 v3z = v1z
+#             else:
+#                 v3x = xn
+#                 v3y = z(xn, v1z, t)
+#                 v3z = v1z
 
-            vax = v2x - v1x
-            vay = v2y - v1y
-            vaz = v2z - v1z
+#             vax = v2x - v1x
+#             vay = v2y - v1y
+#             vaz = v2z - v1z
 
-            vbx = v3x - v1x
-            vby = v3y - v1y
-            vbz = v3z - v1z
+#             vbx = v3x - v1x
+#             vby = v3y - v1y
+#             vbz = v3z - v1z
 
-            nx = (vby * vaz) - (vbz * vay)
-            ny = (vbz * vax) - (vbx * vaz)
-            nz = (vbx * vay) - (vby * vax)
+#             nx = (vby * vaz) - (vbz * vay)
+#             ny = (vbz * vax) - (vbx * vaz)
+#             nz = (vbx * vay) - (vby * vax)
 
-            l = sqrt(nx * nx + ny * ny + nz * nz)
-            if l != 0:
-                l = 1 / l
-                normal[indice + 3] = nx * l
-                normal[indice + 4] = ny * l
-                normal[indice + 5] = nz * l
-            else:
-                normal[indice + 3] = 0
-                normal[indice + 4] = 1
-                normal[indice + 5] = 0
+#             l = sqrt(nx * nx + ny * ny + nz * nz)
+#             if l != 0:
+#                 l = 1 / l
+#                 normal[indice + 3] = nx * l
+#                 normal[indice + 4] = ny * l
+#                 normal[indice + 5] = nz * l
+#             else:
+#                 normal[indice + 3] = 0
+#                 normal[indice + 4] = 1
+#                 normal[indice + 5] = 0
 
-            if j != 0:
-                # Values were computed during the previous loop
-                preindice = 6 * (i + (j - 1) * (RESOLUTION + 1))
-                normal[indice] = normal[preindice + 3]
-                normal[indice + 1] = normal[preindice + 4]
-                normal[indice + 2] = normal[preindice + 5]
-            else:
-                # v1x = v1x
-                v1y = z(v1x, (j - 1) * delta - 1, t)
-                v1z = (j - 1) * delta - 1
+#             if j != 0:
+#                 # Values were computed during the previous loop
+#                 preindice = 6 * (i + (j - 1) * (RESOLUTION + 1))
+#                 normal[indice] = normal[preindice + 3]
+#                 normal[indice + 1] = normal[preindice + 4]
+#                 normal[indice + 2] = normal[preindice + 5]
+#             else:
+#                 # v1x = v1x
+#                 v1y = z(v1x, (j - 1) * delta - 1, t)
+#                 v1z = (j - 1) * delta - 1
 
-                # v3x = v3x
-                v3y = z(v3x, v2z, t)
-                v3z = v2z
+#                 # v3x = v3x
+#                 v3y = z(v3x, v2z, t)
+#                 v3z = v2z
 
-                vax = v1x - v2x
-                vay = v1y - v2y
-                vaz = v1z - v2z
+#                 vax = v1x - v2x
+#                 vay = v1y - v2y
+#                 vaz = v1z - v2z
 
-                vbx = v3x - v2x
-                vby = v3y - v2y
-                vbz = v3z - v2z
+#                 vbx = v3x - v2x
+#                 vby = v3y - v2y
+#                 vbz = v3z - v2z
 
-                nx = (vby * vaz) - (vbz * vay)
-                ny = (vbz * vax) - (vbx * vaz)
-                nz = (vbx * vay) - (vby * vax)
+#                 nx = (vby * vaz) - (vbz * vay)
+#                 ny = (vbz * vax) - (vbx * vaz)
+#                 nz = (vbx * vay) - (vby * vax)
 
-                l = sqrt(nx * nx + ny * ny + nz * nz)
-                if l != 0:
-                    l = 1 / l
-                    normal[indice] = nx * l
-                    normal[indice + 1] = ny * l
-                    normal[indice + 2] = nz * l
-                else:
-                    normal[indice] = 0
-                    normal[indice + 1] = 1
-                    normal[indice + 2] = 0
+#                 l = sqrt(nx * nx + ny * ny + nz * nz)
+#                 if l != 0:
+#                     l = 1 / l
+#                     normal[indice] = nx * l
+#                     normal[indice + 1] = ny * l
+#                     normal[indice + 2] = nz * l
+#                 else:
+#                     normal[indice] = 0
+#                     normal[indice + 1] = 1
+#                     normal[indice + 2] = 0
 
 
-    glTranslatef(1, y_lvl, 1)
+#     glTranslatef(1, y_lvl, 1)
 
-    # Render wireframe?
-    if wire_frame:
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+#     # Render wireframe?
+#     if wire_frame:
+#         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
 
-    # The water
-    glEnable(GL_TEXTURE_2D)
-    glColor3f(1, 1, 1)
-    glEnableClientState(GL_NORMAL_ARRAY)
-    glEnableClientState(GL_VERTEX_ARRAY)
-    glNormalPointer(GL_FLOAT, 0, normal)
-    glVertexPointer(3, GL_FLOAT, 0, surface)
-    for i in range(RESOLUTION):
-        glDrawArrays(GL_TRIANGLE_STRIP, i * length, length)
+#     # The water
+#     glEnable(GL_TEXTURE_2D)
+#     glBindTexture(GL_TEXTURE_2D, self.texture)
+#     glColor3f(1, 1, 1)
+#     glEnableClientState(GL_NORMAL_ARRAY)
+#     glEnableClientState(GL_VERTEX_ARRAY)
+#     glNormalPointer(GL_FLOAT, 0, normal)
+#     glVertexPointer(3, GL_FLOAT, 0, surface)
+#     for i in range(RESOLUTION):
+#         glDrawArrays(GL_TRIANGLE_STRIP, i * length, length)
 
-    # Draw normals?
-    if normals != 0:
-        glDisable(GL_TEXTURE_2D)
-        glColor3f(1, 0, 0)
-        glBegin(GL_LINES)
-        for j in range(RESOLUTION):
-            for i in range(RESOLUTION + 1):
-                indice = 6 * (i + j * (RESOLUTION + 1))
-                # glVertex3fv (*surface[indice])
-                glVertex3f(surface[indice], surface[indice + 1],
-                           surface[indice + 2])
-                glVertex3f(surface[indice] + normal[indice] / 3,
-                           surface[indice + 1] + normal[indice + 1] / 3,
-                           surface[indice + 2] + normal[indice + 2] / 3)
-        glEnd()
-    glTranslatef(-1, -y_lvl, -1)
-    return
+#     # Draw normals?
+#     if normals != 0:
+#         glDisable(GL_TEXTURE_2D)
+#         glColor3f(1, 0, 0)
+#         glBegin(GL_LINES)
+#         for j in range(RESOLUTION):
+#             for i in range(RESOLUTION + 1):
+#                 indice = 6 * (i + j * (RESOLUTION + 1))
+#                 # glVertex3fv (*surface[indice])
+#                 glVertex3f(surface[indice], surface[indice + 1],
+#                            surface[indice + 2])
+#                 glVertex3f(surface[indice] + normal[indice] / 3,
+#                            surface[indice + 1] + normal[indice + 1] / 3,
+#                            surface[indice + 2] + normal[indice + 2] / 3)
+#         glEnd()
+#     glTranslatef(-1, -y_lvl, -1)
+#     return
 
 class Water(object):
     def __init__(self, resolution, size, y=-1, *args, **kwargs):
@@ -236,7 +237,7 @@ class Water(object):
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
 
         # Texture loading
-        texture = glGenTextures(1)
+        self.texture = glGenTextures(1)
         # alpha.jpg : alpha_texture, GL_ALPHA, 256
         alpha_texture = load_texture("alpha.jpg")  # bytes array
         # reflection.jpg : caustic_texture, GL_RGB, 256
@@ -248,7 +249,7 @@ class Water(object):
             total_texture[4 * i + 2] = caustic_texture[3 * i + 2]
             total_texture[4 * i + 3] = alpha_texture[i]
 
-        glBindTexture(GL_TEXTURE_2D, texture)
+        glBindTexture(GL_TEXTURE_2D, self.texture)
         # conversion en bytes indispensable
         gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, 256, 256, GL_RGBA,
                         GL_UNSIGNED_BYTE, bytes(total_texture))
@@ -382,6 +383,7 @@ class Water(object):
         # The water
         glEnable(GL_TEXTURE_2D)
         glColor3f(1, 1, 1)
+        glBindTexture(GL_TEXTURE_2D, self.texture)
         glEnableClientState(GL_NORMAL_ARRAY)
         glEnableClientState(GL_VERTEX_ARRAY)
         glNormalPointer(GL_FLOAT, 0, self.normal)
@@ -537,7 +539,7 @@ if __name__ == '__main__':
     glutCreateWindow("Water")
 
     init_water()
-    # Declaration of the callbacks
+    # Callbacks
     glutDisplayFunc(less_bloated_display_func)
     glutReshapeFunc(reshape_func)
     glutKeyboardFunc(keyboard_func)

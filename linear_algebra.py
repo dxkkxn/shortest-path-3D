@@ -13,12 +13,16 @@ class Point(object):
         self.z = z_coord
 
     def __str__(self):
-        """Representation en str."""
+        """Representation in str."""
         return f"({self.x}, {self.y}, {self.z})"
 
     def __repr__(self):
-        """Representation en str."""
+        """Representation in str."""
         return f"({self.x}, {self.y}, {self.z})"
+
+    def __eq__(self, p):
+        """Equal overload."""
+        return self.x == p.x and self.y == p.y and self.z == p.z
 
     def to_tuple(self):
         """Renvoi le vector en forme de tuple."""

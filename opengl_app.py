@@ -10,6 +10,7 @@ from bezier import cubic_bezier
 from math import cos, sin
 from grid import Grid
 from worm import Worm
+from PIL import Image
 import random
 
 
@@ -38,6 +39,7 @@ class Render3D(object):
         self.display_path = False
         self.animation = False
         self.x_look_at, self.y_look_at, self.z_look_at = 0, 0, 0
+        self.old_vec = Vector(Point(0, 0, 0))
 
         self.grid = grid
         x = len(grid)
@@ -93,6 +95,7 @@ class Render3D(object):
         gluQuadricDrawStyle(quadric, GLU_FILL)
         # init_random_grid(12)
         glDisable(GL_TEXTURE_2D)
+        self.load_worm_texture()
         return
 
     def display_ground(self):
@@ -268,14 +271,16 @@ class Render3D(object):
 
         tess = gluNewTess()
         gluTessProperty(tess, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD)
-        gluTessCallback(tess, GLU_TESS_EDGE_FLAG_DATA, edgeFlagCallback)#forces triangulation of polygons (i.e. GL_TRIANGLES) rather than returning triangle fans or strips
+        # forces triangulation of polygons (i.e. GL_TRIANGLES) rather than
+        # returning triangle fans or strips
+        gluTessCallback(tess, GLU_TESS_EDGE_FLAG_DATA, edgeFlagCallback)
         gluTessCallback(tess, GLU_TESS_BEGIN, beginCallback)
         gluTessCallback(tess, GLU_TESS_VERTEX, vertexCallback)
         gluTessCallback(tess, GLU_TESS_COMBINE, combineCallback)
         gluTessCallback(tess, GLU_TESS_END, endCallback)
         gluTessBeginPolygon(tess, 0)
 
-        #first handle the main polygon
+        # first handle the main polygon
         gluTessBeginContour(tess)
         for point in polygon:
             gluTessVertex(tess, point, point)
@@ -531,15 +536,13 @@ class Render3D(object):
         if self.three_d:
             y_s = (self.grid[sz, sx]) / 255 * 10 + .5
 
-        self.path3D.append(self.random_point(Point(2 * sx, y_s,
-                                                    2 * sz)))
-        self.path3D.append(self.random_point(Point(2 * sx, y_s,
-                                                    2 * sz)))
+        self.path3D.append(self.random_point(Point(2 * sx, y_s, 2 * sz)))
+        self.path3D.append(self.random_point(Point(2 * sx, y_s, 2 * sz)))
 
         self.path3D.append(Point(2 * sx + 0.5, y_s, 2 * sz + 0.5))
         tmp = []
-        for i in range(0, len(self.path3D)-1, 3):
-            tmp.extend(cubic_bezier(self.path3D[i:i+4]))
+        for i in range(0, len(self.path3D) - 1, 3):
+            tmp.extend(cubic_bezier(self.path3D[i:i + 4]))
         self.path3D = tmp
 
     @staticmethod
@@ -593,7 +596,7 @@ class Render3D(object):
                 if self.path3D:
                     self.draw_lines(self.path3D)
                     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
-                                [0, 1, 0, 1])
+                                 [0, 1, 0, 1])
                 else:
                     print("Please set the path before")
             if self.animation:
@@ -602,19 +605,23 @@ class Render3D(object):
                 gluQuadricTexture(self.sph1, GL_TRUE)
                 n = len(self.path3D)
                 self.worm.move(self.path3D[self.move_worm % n])
-                for pos in self.worm.get_positions():
+                self.draw_head()
+                for pos in self.worm.get_positions()[1:]:
                     x, y, z = pos.to_tuple()
                     glTranslatef(x, y, z)
+                    glEnable(GL_TEXTURE_2D)
+                    glBindTexture(GL_TEXTURE_2D, self.worm_texture)
                     gluSphere(self.sph1, 0.5, 100, 80)
+                    glDisable(GL_TEXTURE_2D)
                     glTranslatef(-x, -y, -z)
 
             glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
                          [1, 1, 1, 1])
             glEnable(GL_BLEND)
             glBlendFunc(GL_ONE, GL_SRC_ALPHA)
-            glEnable(GL_TEXTURE_2D)
+            # glEnable(GL_TEXTURE_2D)
             self.water.render()
-            glDisable(GL_TEXTURE_2D)
+            # glDisable(GL_TEXTURE_2D)
             glDisable(GL_BLEND)
 
         glPopMatrix()
@@ -623,7 +630,44 @@ class Render3D(object):
         glutSwapBuffers()
         if self.stop is False:
             glutPostRedisplay()
-        return
+
+    def draw_head(self):
+        """Draw worm's head."""
+        n = len(self.path3D)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
+                     [1, 1, 1, 1])
+        curr_p = self.path3D[(self.move_worm) % n]
+        next_p = self.path3D[(self.move_worm + 1) % n]
+        i = 1
+        vec = Vector(next_p, curr_p)
+        # No null vector
+        while vec.x == 0 and vec.y == 0 and vec.z == 0:
+            next_p = self.path3D[(self.move_worm + i) % n]
+            vec = Vector(next_p, curr_p)
+            i += 1
+        vec.rescale(0.1)
+        self.old_vec = vec
+        # else:
+        #     print(next_p, curr_p)
+        #     print("aaaaaaaaaaaaaaaaah")
+        x, y, z = self.worm.get_positions()[0].to_tuple()
+        vx, vy, vz = vec.to_tuple()
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
+                     [0, 0, 0, 1])
+        glPushMatrix()
+        p = vec.translate(curr_p)
+        glTranslatef(*p.to_tuple())
+        gluSphere(self.sph1, 0.3, 100, 80)
+        glPopMatrix()
+
+        glTranslatef(x, y, z)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,
+                     [1, 1, 1, 1])
+        glEnable(GL_TEXTURE_2D)
+        glBindTexture(GL_TEXTURE_2D, self.worm_texture)
+        gluSphere(self.sph1, 0.5, 100, 80)
+        glDisable(GL_TEXTURE_2D)
+        glTranslatef(-x, -y, -z)
 
     def keyboard(self, key, x, y):
         """Control keyboards inputs."""
@@ -807,8 +851,8 @@ class Render3D(object):
                     normal = v2 ^ v1
 
                     bc = barycenter(Point(2 * x + 1, y, 2 * z + 1),
-                                                        Point(2 * x + 2, j_plus1_y, 2 * z + 1),
-                                                        Point(2 * x + 2, ij_plus1_y, 2 * z + 2))
+                                    Point(2 * x + 2, j_plus1_y, 2 * z + 1),
+                                    Point(2 * x + 2, ij_plus1_y, 2 * z + 2))
                     bx, by, bz = (bc.to_tuple())
                     glTranslatef(bx, by, bz)
                     gluSphere(self.sph1, 0.1, 5, 5)
@@ -821,8 +865,8 @@ class Render3D(object):
                     glEnd()
 
                     bc = barycenter(Point(2 * x + 1, y, 2 * z + 1),
-                                                        Point(2 * x + 2, ij_plus1_y, 2 * z + 2),
-                                                        Point(2 * x + 1, i_plus1_y, 2 * z + 2))
+                                    Point(2 * x + 2, ij_plus1_y, 2 * z + 2),
+                                    Point(2 * x + 1, i_plus1_y, 2 * z + 2))
                     p0 = Point(2 * x + 1, y, 2 * z + 1)
                     v1 = Vector(p0, Point(2 * x + 2, ij_plus1_y, 2 * z + 2))
                     v2 = Vector(p0, Point(2 * x + 1, i_plus1_y, 2 * z + 2))
@@ -886,8 +930,30 @@ class Render3D(object):
         self.path = path
         self.compute_path_3D()
         initial_pos = self.path3D[0]
-        self.worm = Worm(20, initial_pos)
+        self.worm = Worm(8, initial_pos)
 
+    def load_worm_texture(self):
+        self.worm_texture = None
+        image = Image.open("silkworm_textures.png")  # retourne une PIL.image
+
+        ix = image.size[0]
+        iy = image.size[1]
+        # image = image.tostring("raw", "RGBX", 0, -1)
+        image = image.tobytes("raw", "RGBX", 0, -1)
+
+        # 2d texture (x and y size)
+        # BUG (?)
+        #glBindTexture(GL_TEXTURE_2D, glGenTextures(1, texture_planete[ident]))
+        self.worm_texture = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, int(self.worm_texture))
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT,1)
+        glTexImage2D(GL_TEXTURE_2D, 0, 3, ix, iy, 0, GL_RGBA,
+                     GL_UNSIGNED_BYTE, image)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        # commente car alpha blinding (cf. atmosphere)
+        #glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
 
 
 if __name__ == "__main__":
