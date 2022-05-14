@@ -366,8 +366,8 @@ class Render3D(object):
     def redisplay(self):
         glutPostRedisplay()
 
-    def compute_path_3D(self):
-        """Compute the 3D path using bezier."""
+    def compute_path(self):
+        """Compute the 3D/2D path using bezier."""
         self.path3D = []
         sz, sx = self.path[0]
         y_s, y_d = 0.5, 0.5
@@ -631,6 +631,15 @@ class Render3D(object):
         if self.stop is False:
             glutPostRedisplay()
 
+    def set_2D(self):
+        """Set 2D view."""
+        self.three_d = False
+        self.set_water_height(-1)
+
+    def set_3D(self):
+        """Set 3D view."""
+        self.three_d = True
+
     def draw_head(self):
         """Draw worm's head."""
         n = len(self.path3D)
@@ -699,7 +708,7 @@ class Render3D(object):
         elif key == b'd':
             self.display_path = not self.display_path
         elif key == b'u':
-            self.compute_path_3D()
+            self.compute_path()
         elif key == b'a':
             # a -animate
             if self.animation:
@@ -877,9 +886,8 @@ class Render3D(object):
                     glTranslatef(-bx, -by, -bz)
 
                     glBegin(GL_LINES)
-                    glMaterialfv(
-                        GL_FRONT, GL_AMBIENT_AND_DIFFUSE, [
-                            1, 0, 0, 1])
+                    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE,
+                                 (1, 0, 0, 1))
                     normal.rescale(.5)
                     glVertex3f(bx, by, bz)
                     glVertex3fv(normal.translate(Point(bx, by, bz)).to_tuple())
@@ -926,9 +934,10 @@ class Render3D(object):
         glEnd()
         return
 
+
     def set_path(self, path):
         self.path = path
-        self.compute_path_3D()
+        self.compute_path()
         initial_pos = self.path3D[0]
         self.worm = Worm(8, initial_pos)
 

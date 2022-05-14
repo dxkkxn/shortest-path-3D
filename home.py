@@ -95,26 +95,31 @@ class TkView(tk.Frame):
         self.settings = tk.Frame(self)
         self.settings.pack(side=tk.TOP, fill=tk.BOTH)
 
-        phone = tk.StringVar()
+        self.phone_algo = tk.StringVar()
         subframe = tk.Frame(self.settings)
         self.dijkstra = tk.Radiobutton(subframe, text="Dijkstra",
-                                       variable=phone, value="Dijkstra",
+                                       variable=self.phone_algo, value="Dijkstra",
                                        anchor=tk.W)
-        self.a_star = tk.Radiobutton(subframe, text="A-star", variable=phone,
+        self.a_star = tk.Radiobutton(subframe, text="A-star",
+                                     variable=self.phone_algo,
                                      value="A-star", anchor=tk.W)
 
         subframe2 = tk.Frame(self.settings)
-        phone = tk.StringVar()
-        self.two_d = tk.Radiobutton(subframe2, text="2D", variable=phone,
+        self.phone_dimen = tk.StringVar()
+        self.two_d = tk.Radiobutton(subframe2, text="2D",
+                                    variable=self.phone_dimen,
                                     value="2D", anchor=tk.W)
-        self.three_d = tk.Radiobutton(subframe2, text="3D", variable=phone,
+        self.three_d = tk.Radiobutton(subframe2, text="3D",
+                                      variable=self.phone_dimen,
                                       value="3D", anchor=tk.W)
 
         self.two_d.pack(side=tk.TOP, fill=tk.X, padx=10)
         self.three_d.pack(side=tk.TOP, fill=tk.X, padx=10)
+        self.three_d.invoke()
 
         label = tk.Label(self.settings, text="Water level :")
         label.pack(side=tk.LEFT, fill=tk.BOTH)
+        # self.water = IntVar()
         self.water_sb = tk.Spinbox(self.settings, from_=-1, to=10, increment=1,
                                    width=2, state="readonly")
         self.water_sb.pack(side=tk.LEFT, fill=tk.BOTH, padx=10)
@@ -152,11 +157,24 @@ class AppController():
         self.opengl = opengl_app
         self.selected = []  # vertex selected in canvas
         self.view.dijkstra.invoke()
-        self.view.three_d.invoke()
         self.view.animate.config(command=self.animate)
         self.view.change_grid.config(command=self.open_settings)
+        self.view.three_d.config(command=self.change_dimen)
+        self.view.two_d.config(command=self.change_dimen)
         self.master = master
         return
+
+    def change_dimen(self):
+        """Change the dimension in opengl app."""
+        if self.view.phone_dimen.get() == "2D":
+            self.view.water_sb.insert(0, "-1")
+            self.opengl.set_2D()
+            self.view.water_sb.config(state="disabled")
+        else:
+            self.view.water_sb.config(state="readonly")
+            assert(self.view.phone_dimen.get() == "3D")
+            self.opengl.set_3D()
+            self.update_grid()
 
     def open_settings(self):
         """Create a topleve with all avaible settings."""
@@ -173,6 +191,7 @@ class AppController():
             self.grid.smooth(radius)
         self.view.canvas.delete("all")
         self.dico = {}  # reset dico
+        self.selected = []
         self.create_grid()
         self.opengl.set_grid(self.grid)
         self.opengl.stop = False
@@ -254,6 +273,9 @@ class AppController():
             self.opengl.set_path(self.path)
             self.opengl.display_path = True
         self.view.water_sb.configure(state=tk.DISABLED)
+        self.view.two_d.configure(state=tk.DISABLED)
+        self.view.three_d.configure(state=tk.DISABLED)
+
 
     def compute_dijkstra(self):
         """Compute the dijkstra path for self.selected points."""
@@ -277,11 +299,15 @@ class AppController():
         self.view.canvas.itemconfigure(id_, fill=str_col)
         self.view.canvas.delete("path")
         self.view.water_sb.configure(state="disabled")
+        self.view.two_d.configure(state=tk.DISABLED)
+        self.view.three_d.configure(state=tk.DISABLED)
         if len(self.selected) >= 2:
             self.path = self.compute_dijkstra()
             self.draw_path()
         if len(self.selected) == 0:
             self.view.water_sb.configure(state="readonly")
+            self.view.two_d.configure(state=tk.ACTIVE)
+            self.view.three_d.configure(state=tk.ACTIVE)
 
     def _get_rect_id_in(self, pos):
         for id_, coord in self.dico.items():
