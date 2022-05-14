@@ -12,6 +12,7 @@ sur l'application 3D.
 
 ## Cahier des charges
 - [ ] codage, sauvegarde et chargement d’une matrice à valeurs entières, 
+
 La sauvegarde et le chargement n'ont pas été fait car une solution plus 
 élégante à été mise en place pour la communication entre les deux applications.
 
