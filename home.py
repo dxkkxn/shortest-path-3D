@@ -140,7 +140,7 @@ class TkView(tk.Frame):
 
 
 class AppController():
-    """Controller for the tkinter application."""
+    """Controller for the tkinter and opengl applications."""
 
     def __init__(self, master, model, opengl_app):
         """Initialise the viegrid."""
@@ -275,6 +275,7 @@ class AppController():
         self.view.water_sb.configure(state=tk.DISABLED)
         self.view.two_d.configure(state=tk.DISABLED)
         self.view.three_d.configure(state=tk.DISABLED)
+        self.view.change_grid.configure(state=tk.DISABLED)
 
 
     def compute_dijkstra(self):
@@ -308,6 +309,7 @@ class AppController():
             self.view.water_sb.configure(state="readonly")
             self.view.two_d.configure(state=tk.ACTIVE)
             self.view.three_d.configure(state=tk.ACTIVE)
+            self.view.change_grid.configure(state=tk.ACTIVE)
 
     def _get_rect_id_in(self, pos):
         for id_, coord in self.dico.items():
