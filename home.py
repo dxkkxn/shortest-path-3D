@@ -2,6 +2,7 @@
 import tkinter as tk
 from tkinter import ttk
 from dijkstra import dijkstra_matrix_sorted_dict
+from dijkstra import a_star_matrix_sorted_dict
 from grid import Grid
 import random
 
@@ -10,6 +11,7 @@ inf = float('inf')
 
 class TkSettingsView(tk.Toplevel):
     """Tk toplevel window for the settings."""
+
 
     def __init__(self, *args, **kwargs):
         """Initialise the settings toplevel."""
@@ -82,6 +84,14 @@ class TkSettingsController():
 class TkView(tk.Frame):
     """View for the tkinter application."""
 
+    def switch_algo(self):
+        #RESET tkinter map and opengl app path
+        print("reset path")
+        if self.algo=="dijkstra":
+            self.algo="a_star"
+        else:
+            self.algo="dijkstra"
+
     def __init__(self, master, *args, **kwargs):
         """Initialise les widgets sur l'application."""
         super().__init__(master, *args, **kwargs)
@@ -97,11 +107,13 @@ class TkView(tk.Frame):
 
         phone = tk.StringVar()
         subframe = tk.Frame(self.settings)
+        self.algo="dijkstra"
         self.dijkstra = tk.Radiobutton(subframe, text="Dijkstra",
                                        variable=phone, value="Dijkstra",
-                                       anchor=tk.W)
+                                       anchor=tk.W,command=self.switch_algo)
         self.a_star = tk.Radiobutton(subframe, text="A-star", variable=phone,
-                                     value="A-star", anchor=tk.W)
+                                     value="A-star", anchor=tk.W,
+                                     command=self.switch_algo)
 
         subframe2 = tk.Frame(self.settings)
         phone = tk.StringVar()
@@ -226,7 +238,7 @@ class AppController():
         return "#" + "".join(hex_rgb_list)
 
     def draw_path(self):
-        """Draw the path with green rectangles."""
+        """Draw the path with red oval"""
         n = len(self.grid)
         x_step = self.width / n
         y_step = self.height / n
@@ -249,7 +261,7 @@ class AppController():
         self.selected.append(self.dico[id_])
 
         if len(self.selected) >= 2:
-            self.path = self.compute_dijkstra()
+            self.path = self.compute_a_star()
             self.draw_path()
             self.opengl.set_path(self.path)
             self.opengl.display_path = True
@@ -265,6 +277,17 @@ class AppController():
                 path.pop(-1)  # Eliminate last vertex to avoid repetion
                 # last vertex of previous path is the first vertex of next path
             path.extend(dijkstra_matrix_sorted_dict(self.grid, start, target))
+        return path
+
+    def compute_a_star(self):
+        """Compute the a_star path for self.selected points."""
+        path = []
+        for i in range(1, len(self.selected)):
+            start = self.selected[i - 1]
+            target = self.selected[i]
+            if len(path) != 0:
+                path.pop(-1)
+            path.extend(a_star_matrix_sorted_dict(self.grid, start, target))
         return path
 
     def deselect_square(self, event=None):

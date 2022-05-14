@@ -4,7 +4,10 @@ from linear_algebra import Point, Vector
 
 def cubic_bezier(points_list: list[Point]):
     """Compute a cubic bezier curve."""
-    assert(len(points_list) == 4)
+    if len(points_list) >= 4:
+        raise ValueError
+    if len(points_list) != len(set(points_list)):
+        raise ValueError
     polys = ((1, -3, 3, -1), (0, 3, -6, 3), (0, 0, 3, -3), (0, 0, 0, 1))
     u = 0
     bezier_curve = []
@@ -28,6 +31,7 @@ def horner(poly, x):
 
     Ordered by degree
     """
+    print(poly)
     n = len(poly)
     res = poly[n - 1]
     i = 0
