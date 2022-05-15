@@ -96,4 +96,96 @@ class test_dijkstra(unittest.TestCase):
         self.assertAlmostEqual(round(cost),2)
 
 if __name__ == '__main__':
+    choice=input("Afficher le benchmark des structures de données ?"
+                 +"\n\t1:Dijkstra\n\t2:A*\n\t3:les deux\n")
+    import random as rd
+    import time
+    match choice:
+        case "1":
+            print("Dijkstra\n~~~~~~~~~~~~~")
+            N = 500
+            M = [[rd.randint(0, 1000) for i in range(N)] for i in range(N)]
+            vertex_start = (rd.randint(0, N-1), rd.randint(0, N-1))
+            vertex_end = (rd.randint(0, N-1), rd.randint(0, N-1))
+
+            start = time.time()
+            m = dijkstra.dijkstra_matrix_heap(M, vertex_start, vertex_end)
+            end = time.time()
+            print("heap time = ", end-start)
+
+            start = time.time()
+            n =dijkstra.dijkstra_matrix_deque(M, vertex_start, vertex_end)
+            end = time.time()
+            print("deque time = ", end-start)
+
+            start = time.time()
+            l = dijkstra.dijkstra_matrix_sorted_dict(M, vertex_start, vertex_end)
+            end = time.time()
+            print("sorted dict time = ", end-start)
+        case "2":
+            print("A*\n~~~~~~~~~~~~~")
+            N = 500
+            M = [[rd.randint(0, 1000) for i in range(N)] for i in range(N)]
+            vertex_start = (rd.randint(0, N-1), rd.randint(0, N-1))
+            vertex_end = (rd.randint(0, N-1), rd.randint(0, N-1))
+
+            start = time.time()
+            m = a_star.a_star_matrix_heap(M, vertex_start, vertex_end)
+            end = time.time()
+            print("heap time = ", end-start)
+
+            start = time.time()
+            n =a_star.a_star_matrix_deque(M, vertex_start, vertex_end)
+            end = time.time()
+            print("deque time = ", end-start)
+
+            start = time.time()
+            l = a_star.a_star_matrix_sorted_dict(M, vertex_start, vertex_end)
+            end = time.time()
+            print("sorted dict time = ", end-start)
+
+        case "3":
+            print("Dijkstra\n~~~~~~~~~~~~~")
+            N = 500
+            M = [[rd.randint(0, 1000) for i in range(N)] for i in range(N)]
+            vertex_start = (rd.randint(0, N-1), rd.randint(0, N-1))
+            vertex_end = (rd.randint(0, N-1), rd.randint(0, N-1))
+
+            start = time.time()
+            m = dijkstra.dijkstra_matrix_heap(M, vertex_start, vertex_end)
+            end = time.time()
+            print("heap time = ", end-start)
+
+            start = time.time()
+            n =dijkstra.dijkstra_matrix_deque(M, vertex_start, vertex_end)
+            end = time.time()
+            print("deque time = ", end-start)
+
+            start = time.time()
+            l = dijkstra.dijkstra_matrix_sorted_dict(M, vertex_start, vertex_end)
+            end = time.time()
+            print("sorted dict time = ", end-start)
+
+            print("A*\n~~~~~~~~~~~~~")
+            N = 500
+            M = [[rd.randint(0, 1000) for i in range(N)] for i in range(N)]
+            vertex_start = (rd.randint(0, N-1), rd.randint(0, N-1))
+            vertex_end = (rd.randint(0, N-1), rd.randint(0, N-1))
+
+            start = time.time()
+            m = a_star.a_star_matrix_heap(M, vertex_start, vertex_end)
+            end = time.time()
+            print("heap time = ", end-start)
+
+            start = time.time()
+            n =a_star.a_star_matrix_deque(M, vertex_start, vertex_end)
+            end = time.time()
+            print("deque time = ", end-start)
+
+            start = time.time()
+            l = a_star.a_star_matrix_sorted_dict(M, vertex_start, vertex_end)
+            end = time.time()
+            print("sorted dict time = ", end-start)
+
+    print("Passage au test Unitaire")
     unittest.main()
