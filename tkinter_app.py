@@ -91,7 +91,7 @@ class TkView(tk.Frame):
         top_frame.pack(side=tk.TOP, fill=tk.X)
         self.change_grid.pack(side=tk.LEFT)
 
-        self.canvas = tk.Canvas(self, width=1024, height=1024)
+        self.canvas = tk.Canvas(self, width=512, height=512)
         self.canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=tk.YES)
         self.settings = tk.Frame(self)
         self.settings.pack(side=tk.TOP, fill=tk.BOTH)
