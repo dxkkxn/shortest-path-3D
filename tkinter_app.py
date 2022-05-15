@@ -259,6 +259,7 @@ class AppController():
 
     def draw_path(self):
         """Draw the path with green rectangles."""
+        self.view.canvas.delete("path")
         n = len(self.grid)
         x_step = self.width / n
         y_step = self.height / n
