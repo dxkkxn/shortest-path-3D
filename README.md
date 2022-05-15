@@ -2,7 +2,7 @@
 Au moment de l'exécution de ``main py`` deux fenêtres se lancent. Une sur Tkinter (terrain 2 D)
 et une autre sur OpenGL avec le terrain en 3D.
 Sur l'application Tkinter vous pouvez sélectionner plusieurs points et l'algorithme
-de votre préférence afin de calculer le plus court chemin, l'application Open Gl
+de votre préférence afin de calculer le plus court chemin, l'application OpenGl
 devrait se mettre à jour en même temps que l'application 2D, ainsi que les
 dimensions du terrain.
 
