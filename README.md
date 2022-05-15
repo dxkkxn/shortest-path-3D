@@ -30,6 +30,8 @@ On a choisi de réaliser le plus court chemin à l'aide de un `sortedict` connu
 sur le nom de map sur C++. Cela est dû à l'inexistence de une structure des 
 données similiare en python de base.
 
+Un test de perfomance se trouve sur le fichier `dijkstra.py`
+
 ### OpenGL
 Sur OpenGL:
 Appuyez sur `n` pour afficher/cacher les normales.

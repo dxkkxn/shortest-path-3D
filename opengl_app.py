@@ -761,6 +761,8 @@ class Render3D(object):
         return
 
 
+    def set_water_resolution(self, res):
+        self.water.set_resolution(res)
 
     def start_animation(self):
         if self.animation:
@@ -779,7 +781,6 @@ class Render3D(object):
         self.x_cam, self.y_cam, self.z_cam = x, y + 8, z + 2
         for i in range(len(self.path3D)):
             glutTimerFunc(1000+(i*100), self.animate, None)
-        print("finished")
 
     def animate(self, event):
         """Start the animation."""

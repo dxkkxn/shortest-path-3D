@@ -215,9 +215,8 @@ class Water(object):
 
     def set_size(self, size):
         self.size = size
-    # def set_size(self, size):
-    #     """Set the size of water starting at 0, 0, 0."""
-    #     self.size = size
+    def set_resolution(self, res):
+        self.res = res
 
     def init_textures(self):
         """Initialise des textures."""

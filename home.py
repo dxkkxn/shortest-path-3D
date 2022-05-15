@@ -183,7 +183,6 @@ class AppController():
         self.master.wait_window(settings.view)
         size, phone, radius, res, seed = settings.get()
         self.grid = Grid(size, seed)
-        print(phone)
         if phone == "Tuckey":
             self.grid.tuckey_smooth(radius)
         else:
@@ -193,6 +192,7 @@ class AppController():
         self.dico = {}  # reset dico
         self.selected = []
         self.create_grid()
+        self.opengl.set_water_resolution(res)
         self.opengl.set_grid(self.grid)
         self.opengl.stop = False
         self.opengl.redisplay()
