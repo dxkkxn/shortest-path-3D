@@ -44,7 +44,7 @@ class test_dijkstra(unittest.TestCase):
            [1,1,100]]
         start,target=(0,2),(3,0)
         path=a_star.a_star_matrix_sorted_dict(M,start,target)
-        self.assertEqual(path, [(0, 2), (1, 2), (2, 1), (3, 0)])
+        self.assertEqual(path, [(0, 2), (1, 1), (2, 1), (3, 0)])
 
 
     def test_start_in_init_deque(self):
@@ -93,7 +93,7 @@ class test_dijkstra(unittest.TestCase):
            [1,1,2]]
         weight=[]
         cost=a_star.cost_a(M,0,0,1,1,(3,2))
-        self.assertAlmostEqual(round(cost),2)
+        self.assertAlmostEqual(round(cost),7)
 
 if __name__ == '__main__':
     choice=input("Afficher le benchmark des structures de données ?"

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from typing import TypeVar
 from linear_algebra import Point, Vector
 
 
@@ -6,6 +7,8 @@ def cubic_bezier(points_list: list[Point]):
     """Compute a cubic bezier curve."""
     if not len(points_list) == 4:
         raise ValueError
+    if type(points_list[0]) is not Point:
+        raise TypeError
     polys = ((1, -3, 3, -1), (0, 3, -6, 3), (0, 0, 3, -3), (0, 0, 0, 1))
     u = 0
     bezier_curve = []

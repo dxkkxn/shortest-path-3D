@@ -11,12 +11,11 @@ inf = float('inf')
 def cost_a(grid, v1i: int, v1j: int, v2i: int, v2j: int, target :tuple):
     """Cost to go from v1 vertex to v2 vertex."""
     # we detect a diagonal mouvement
+    dis=euclidian_distance((v1i,v1j),target)*math.sqrt(2)
     if abs(v1i - v2i) and abs(v1j - v2j):
-        weight = math.sqrt(2) * ((grid[v1i][v1j] + grid[v2i][v2j]) / 2)
-        + euclidian_distance((v2i,v2j),target)*math.sqrt(2)
+        weight = math.sqrt(2) * ((grid[v1i][v1j] + grid[v2i][v2j]) / 2) +dis
     else:
-        weight = (grid[v1i][v1j] + grid[v2i][v2j]) / 2
-        + euclidian_distance((v2i,v2j),target)
+        weight = (grid[v1i][v1j] + grid[v2i][v2j]) / 2 +dis
     return weight
 
 def euclidian_distance(a: tuple, b: tuple):
