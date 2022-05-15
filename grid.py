@@ -94,7 +94,6 @@ class Grid(object):
         if i == 1 and j == -1:
             return "ldiagonal down"
         if i == -1 and j == 1:
-            print(p1, p2)
             return "ldiagonal up"
 
         if i == 0 and j == -1:
