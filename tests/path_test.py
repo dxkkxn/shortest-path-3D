@@ -1,6 +1,9 @@
 from sortedcontainers import sorteddict
+import sys
+sys.path.append('../')
 from linear_algebra import Point
 import dijkstra
+import a_star
 import unittest
 import heapq
 from collections import deque
@@ -40,7 +43,7 @@ class test_dijkstra(unittest.TestCase):
            [100,1,100],
            [1,1,100]]
         start,target=(0,2),(3,0)
-        path=dijkstra.a_star_matrix_sorted_dict(M,start,target)
+        path=a_star.a_star_matrix_sorted_dict(M,start,target)
         self.assertEqual(path, [(0, 2), (1, 2), (2, 1), (3, 0)])
 
 
@@ -63,7 +66,7 @@ class test_dijkstra(unittest.TestCase):
         self.assertEqual(weight[0],{(0, 0)})
 
     def test_dist(self):
-        self.assertEqual(dijkstra.euclidian_distance((0,0),(1,1)),2**0.5)
+        self.assertEqual(a_star.euclidian_distance((0,0),(1,1)),2**0.5)
 
     def test_start_in_init_heap(self):
         M=[[100,100,1],
@@ -89,7 +92,7 @@ class test_dijkstra(unittest.TestCase):
            [2,1,2],
            [1,1,2]]
         weight=[]
-        cost=dijkstra.cost_a(M,0,0,1,1,(3,2))
+        cost=a_star.cost_a(M,0,0,1,1,(3,2))
         self.assertAlmostEqual(round(cost),2)
 
 if __name__ == '__main__':

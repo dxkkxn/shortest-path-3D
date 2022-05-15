@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import sys
+sys.path.append('../')
 from linear_algebra import Point
 from bezier import horner,cubic_bezier
 import unittest
