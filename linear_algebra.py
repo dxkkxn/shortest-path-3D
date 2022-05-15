@@ -106,7 +106,7 @@ def mid_point(pa, pb):
     """Renvoi le point au milieu du segment."""
     v_a = Vector(pa)
     v_b = Vector(pb)
-    sum_ = v_a + v_bZZZZ
+    sum_ = v_a + v_b
     return Point(sum_.x / 2, sum_.y / 2, sum_.z / 2)
 
 

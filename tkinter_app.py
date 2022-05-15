@@ -2,6 +2,7 @@
 import tkinter as tk
 from tkinter import ttk
 from dijkstra import dijkstra_matrix_sorted_dict
+from a_star import a_star_matrix_sorted_dict
 from grid import Grid
 import random
 
@@ -161,8 +162,20 @@ class AppController():
         self.view.change_grid.config(command=self.open_settings)
         self.view.three_d.config(command=self.change_dimen)
         self.view.two_d.config(command=self.change_dimen)
+        self.view.a_star.config(command=self.change_algorithm)
+        self.view.dijkstra.config(command=self.change_algorithm)
         self.master = master
         return
+
+    def change_algorithm(self):
+        # update path
+        p = self.path
+        self.path = self.compute_path()
+        print(p == self.path)
+        self.draw_path()
+        self.opengl.set_path(self.path)
+        self.opengl.display_path = True
+
 
     def change_dimen(self):
         """Change the dimension in opengl app."""
@@ -269,7 +282,7 @@ class AppController():
         self.selected.append(self.dico[id_])
 
         if len(self.selected) >= 2:
-            self.path = self.compute_dijkstra()
+            self.path = self.compute_path()
             self.draw_path()
             self.opengl.set_path(self.path)
             self.opengl.display_path = True
@@ -278,6 +291,12 @@ class AppController():
         self.view.three_d.configure(state=tk.DISABLED)
         self.view.change_grid.configure(state=tk.DISABLED)
 
+    def compute_path(self):
+        if self.view.phone_algo.get() == "Dijkstra":
+            return self.compute_dijkstra()
+        else:
+            assert(self.view.phone_algo.get() == "A-star")
+            return self.compute_a_star()
 
     def compute_dijkstra(self):
         """Compute the dijkstra path for self.selected points."""
@@ -289,6 +308,18 @@ class AppController():
                 path.pop(-1)  # Eliminate last vertex to avoid repetion
                 # last vertex of previous path is the first vertex of next path
             path.extend(dijkstra_matrix_sorted_dict(self.grid, start, target))
+        return path
+
+    def compute_a_star(self):
+        """Compute the A* path for self.selected points."""
+        path = []
+        for i in range(1, len(self.selected)):
+            start = self.selected[i - 1]
+            target = self.selected[i]
+            if len(path) != 0:
+                path.pop(-1)  # Eliminate last vertex to avoid repetion
+                # last vertex of previous path is the first vertex of next path
+            path.extend(a_star_matrix_sorted_dict(self.grid, start, target))
         return path
 
     def deselect_square(self, event=None):
@@ -304,7 +335,7 @@ class AppController():
         self.view.two_d.configure(state=tk.DISABLED)
         self.view.three_d.configure(state=tk.DISABLED)
         if len(self.selected) >= 2:
-            self.path = self.compute_dijkstra()
+            self.path = self.compute_path()
             self.draw_path()
         if len(self.selected) == 0:
             self.view.water_sb.configure(state="readonly")
