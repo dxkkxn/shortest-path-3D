@@ -11,14 +11,6 @@ class test_bezier(unittest.TestCase):
     def test_horner_value(self):
         self.assertEqual(horner([1,1,1],2), 7)
 
-
-    def test_value_eq_bezier(self):
-        x=Point(1,1,1)
-        l_x=[x,x,x]
-        with self.assertRaises(ValueError):
-            cubic_bezier(l_x)
-
-
     def test_value_err_bezier(self):
         x=Point(1,1,1)
         l_x=[x,x,x,x,x]

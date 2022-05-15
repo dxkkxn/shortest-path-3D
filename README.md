@@ -26,8 +26,8 @@ La sauvegarde et le chargement n'ont pas mise en place car une solution plus
 
 ## Choix d'implantation
 ### SortedDict
-On a choisi de réaliser le plus court chemin à l'aide de un `sortedict` connu
-sur le nom de map sur C++. Cela est dû à l'inexistence de une structure des 
+On a choisi de réaliser le plus court chemin à l'aide de la structure de données `sortedict` connu
+sous le nom de map sur C++. Cela est dû à l'inexistence d'une structure de 
 données similiare en python de base.
 Un test de perfomance se trouve sur le fichier `dijkstra.py`, comparant
 dijkstra utilisant un tas, une liste chainée et un sortedict.
@@ -38,17 +38,16 @@ Appuyez sur `n` pour afficher/cacher les normales.
 Le mouvement de la caméra se réalise à l'aide des flèches clavier ou les
 vim-keybindings (`h`, `j`, `k`, `l`)
 ainsi que `z` et `s` pour vous déplacer sur l'axe Z 
-Pour les mouvements de caméra on vous recommande de appuyer sur `g` pour afficher
+Pour les mouvements de caméra nous vous recommandons d'appuyer sur `g` pour afficher
 le repère du plan.
 
-Appuyez sur `n` pour afficher/cacher les normales.
-Vous pouvez changer entre deux dimensions et trois dimensions appuyant sur `3`
+Vous pouvez basculer entre deux dimensions et trois dimensions en appuyant sur `3`
 Vous pouvez changer entre les dimension même lors de l'animation, 
 seulement appuyez sur `u`(uptate) pour mettre à jour le chemin.
 Vous pouvez afficher le chemin pendant l'animation en appuyant sur `d`(draw path).
 
 ### Tests unitaires
-Sur le dossiers tests se situent tous les tests unitaires
+Les tests unitaires se situe dans le dossier `./tests` avec les benchmarks
 
 ### PS
 s'il vous plait envoyez vos retours sur ce projet et les points à 
