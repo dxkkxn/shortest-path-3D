@@ -1,4 +1,4 @@
-from home import AppController
+from tkinter_app import AppController
 from opengl_app import Render3D
 from grid import Grid
 import threading

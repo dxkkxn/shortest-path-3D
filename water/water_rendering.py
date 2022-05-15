@@ -13,7 +13,7 @@ from OpenGL.GLUT import *
 from PIL import Image
 from math import sqrt, sin
 
-from water_noise import init_noise, noise
+from water.water_noise import init_noise, noise
 
 # RESOLUTION = 64
 RESOLUTION = 34

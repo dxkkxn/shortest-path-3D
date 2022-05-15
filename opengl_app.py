@@ -3,7 +3,7 @@
 from OpenGL.GL import *  # car prefixe systematique
 from OpenGL.GLU import *
 from OpenGL.GLUT import *
-from water_rendering import Water
+from water.water_rendering import Water
 from linear_algebra import Vector, Point, mid_point, barycenter
 from dijkstra import dijkstra_matrix_sorted_dict
 from bezier import cubic_bezier
