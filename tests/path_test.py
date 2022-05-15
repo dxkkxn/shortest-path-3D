@@ -167,11 +167,6 @@ if __name__ == '__main__':
             print("sorted dict time = ", end-start)
 
             print("A*\n~~~~~~~~~~~~~")
-            N = 500
-            M = [[rd.randint(0, 1000) for i in range(N)] for i in range(N)]
-            vertex_start = (rd.randint(0, N-1), rd.randint(0, N-1))
-            vertex_end = (rd.randint(0, N-1), rd.randint(0, N-1))
-
             start = time.time()
             m = a_star.a_star_matrix_heap(M, vertex_start, vertex_end)
             end = time.time()

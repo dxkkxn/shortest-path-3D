@@ -1,17 +1,18 @@
 # shortest-path-3D
-Deux fênetre se lancent lors de l'execution une Tkinter (terrain 2D)
-et une autre OpenGL avec le terrain en 3D.
-Sur l'application vous pouvez sélectionner plusieurs points et l'algorithme
-de votre préference pour le calcul du plus court chemin, l'application OpenGL
+Au moment de l'exécution de ``main py`` deux fenêtres se lancent. Une sur Tkinter (terrain 2 D)
+et une autre sur OpenGL avec le terrain en 3D.
+Sur l'application Tkinter vous pouvez sélectionner plusieurs points et l'algorithme
+de votre préférence afin de calculer le plus court chemin, l'application Open Gl
 devrait se mettre à jour en même temps que l'application 2D, ainsi que les
 dimensions du terrain.
 
-Il est conseillé d'avoir les deux fênetres cote à cote car tous les 
-préférences que vous chosirez sur l'application 2D se mettront à jour
-automatiquement sur l'application 3D.
+
+Il est conseillé d'avoir les deux fenêtres côte à côte afin de profiter de la
+mise à jour en temps réel des application 2D et 3D.
+
 
 Sur l'application tkinter on peut choisir `(click gauche`) autant des points de controle que
-vous voulez. Pour avoir accés à certains paramètres on doit déselectionner
+vous voulez. Cependant pour avoir accés à certains paramètres on doit déselectionner
 tous les points (`click droit`).
 
 ## Cahier des charges
@@ -35,7 +36,7 @@ communication entre les applications.
 Nous avons choisi de réaliser le plus court chemin à l'aide de la structure de données `sortedict` connu
 sous le nom de map sur C++. Cela est dû à l'inexistence d'une structure de 
 données similiare en python de base.
-Un test de performance se trouve sur le fichier `tests/path_test.py`. Ceci 
+Ce choix est le résultats d'un test de performance se trouvant sur le fichier `tests/path_test.py`. Ce test
 compare les algorithmes de recherche du plus court chemin, utilisant un tas,
 une liste chainée et un sortedict.
 
@@ -48,13 +49,15 @@ ainsi que `z` et `s` pour vous déplacer sur l'axe Z
 Pour les mouvements de caméra nous vous recommandons d'appuyer sur `g` pour afficher
 le repère du plan.
 
-Vous pouvez basculer entre deux dimensions et trois dimensions en appuyant sur `3`
+Vous pouvez basculer entre deux et trois dimensions en appuyant sur `3`
 Vous pouvez changer entre les dimension même lors de l'animation, 
 seulement appuyez sur `u`(update) pour mettre à jour le chemin.
 Vous pouvez afficher le chemin pendant l'animation en appuyant sur `d`(draw path).
 
 ### Tests unitaires
-Les tests unitaires se situent dans le dossier `./tests` avec les benchmarks.
+Les tests unitaires se situent dans le dossier `./tests` avec les benchmarks il
+néanmoins parfois nécessaire d'attendre un temps important, la génération de
+grid etant aleatoire
 
 ### PS
 Les retours ainsi que les points à améliorer sur le projet serait appreciés.
