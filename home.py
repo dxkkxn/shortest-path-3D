@@ -261,7 +261,7 @@ class AppController():
         self.selected.append(self.dico[id_])
 
         if len(self.selected) >= 2:
-            self.path = self.compute_a_star()
+            self.path = self.compute_dijkstra()
             self.draw_path()
             self.opengl.set_path(self.path)
             self.opengl.display_path = True

@@ -12,7 +12,7 @@ def cost_a(grid, v1i: int, v1j: int, v2i: int, v2j: int, target :tuple):
     # we detect a diagonal mouvement
     if abs(v1i - v2i) and abs(v1j - v2j):
         weight = math.sqrt(2) * ((grid[v1i][v1j] + grid[v2i][v2j]) / 2)
-        + euclidian_distance((v2i,v2j),target)
+        + euclidian_distance((v2i,v2j),target)*math.sqrt(2)
     else:
         weight = (grid[v1i][v1j] + grid[v2i][v2j]) / 2
         + euclidian_distance((v2i,v2j),target)
@@ -20,7 +20,7 @@ def cost_a(grid, v1i: int, v1j: int, v2i: int, v2j: int, target :tuple):
 
 def euclidian_distance(a: tuple, b: tuple):
     """ Return the euclidiane distance of two point """
-    return ((b[0]-a[0])+(b[1]-a[1]))**0.5
+    return math.sqrt((b[0]-a[0])**2+(b[1]-a[1])**2)
 
 def cost(grid, v1i: int, v1j: int, v2i: int, v2j: int):
     """Cost to go from v1 vertex to v2 vertex."""
@@ -283,12 +283,14 @@ def a_star_matrix_sorted_dict(grid, start: tuple, target: tuple):
 
 def a_star_matrix_sorted_dict_np(grid, start: tuple, target: tuple):
     """A-star algorithm using a sorted dict and graph being a matrix."""
+    pass
    #essayer avec np array 
 if __name__ == "__main__" :
     import random as rd
     import time
-    N = 250
-    M = [[rd.randint(0, 500) for i in range(N)] for i in range(N)]
+    N = 10
+    M = [[rd.randint(0, 8) for i in range(N)] for i in range(N)]
+    M=[[100,100,1],[100,1,1],[100,1,100],[1,1,100]]
     vertex_start = (rd.randint(0, N-1), rd.randint(0, N-1))
     vertex_end = (rd.randint(0, N-1), rd.randint(0, N-1))
 
@@ -309,7 +311,9 @@ if __name__ == "__main__" :
 #    start = time.time()
 #
     start = time.time()
-    l = a_star_matrix_sorted_dict(M, vertex_start, vertex_end)
+    l = a_star_matrix_sorted_dict(M, (0,2), (3,0))
+    print(M)
+    print(l)
     end = time.time()
     print("A_start sorted dict time = ", end-start)
     #assert(m == l ==n)

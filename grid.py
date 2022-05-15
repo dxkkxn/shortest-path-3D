@@ -56,6 +56,8 @@ class Grid(object):
 
     def color(self, i, j):
         """Return color according the coord (i,j)."""
+        if not hasattr(self, 'old_grid'):
+            raise AttributeError
         color = self.old_grid[i][j]
         color = int(color)
         height = self.height(i, j)

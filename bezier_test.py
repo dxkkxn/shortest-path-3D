@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import sys
 from linear_algebra import Point
 from bezier import horner,cubic_bezier
 import unittest
@@ -8,7 +7,7 @@ import unittest
 class test_bezier(unittest.TestCase):
 
     def test_horner_value(self):
-        assert horner([1,1,1],2) == 7
+        self.assertEqual(horner([1,1,1],2), 7)
 
 
     def test_value_eq_bezier(self):
