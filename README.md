@@ -28,11 +28,12 @@ communication entre les applications.
 
 ## Choix d'implantation
 ### SortedDict
-On a choisi de réaliser le plus court chemin à l'aide de la structure de données `sortedict` connu
+Nous avons choisi de réaliser le plus court chemin à l'aide de la structure de données `sortedict` connu
 sous le nom de map sur C++. Cela est dû à l'inexistence d'une structure de 
 données similiare en python de base.
-Un test de perfomance se trouve sur le fichier `tests/path_test.py`, comparant
-dijkstra et A* utilisant un tas, une liste chainée et un sortedict.
+Un test de performance se trouve sur le fichier `tests/path_test.py`. Ceci 
+compare les algorithmes de recherche du plus court chemin, utilisant un tas,
+une liste chainée et un sortedict.
 
 ### OpenGL
 Sur OpenGL:
