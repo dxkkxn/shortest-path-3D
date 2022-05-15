@@ -46,10 +46,10 @@ Vous pouvez afficher le chemin pendant l'animation en appuyant sur `d`(draw path
 Pour les mouvements de caméra on vous recommande de appuyer sur `g` pour afficher
 le repère du plan
 
-S'il vous plait envoyez vos retours sur ce projet et les points à 
-améliorer qu'on n'est pas à courir après vous pour les retours comme le
-semestre dernier.
-
 ### Tests unitaires
 Sur le dossiers tests se situent tous les tests unitaires
 
+### PS
+s'il vous plait envoyez vos retours sur ce projet et les points à 
+améliorer qu'on n'est pas à courir après vous pour les retours comme le
+semestre dernier.
