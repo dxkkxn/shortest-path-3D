@@ -1,5 +1,5 @@
 # shortest-path-3D
-Au moment de l'exécution de ``main py`` deux fenêtres se lancent. Une sur Tkinter (terrain 2 D)
+Au moment de l'exécution de ``main py`` deux fenêtres se lancent. Une sur Tkinter (terrain 2D)
 et une autre sur OpenGL avec le terrain en 3D.
 Sur l'application Tkinter vous pouvez sélectionner plusieurs points et l'algorithme
 de votre préférence afin de calculer le plus court chemin, l'application OpenGl
@@ -11,9 +11,7 @@ Il est conseillé d'avoir les deux fenêtres côte à côte afin de profiter de 
 mise à jour en temps réel des application 2D et 3D.
 
 
-Sur l'application tkinter on peut choisir `(click gauche`) autant des points de controle que
-vous voulez. Cependant pour avoir accés à certains paramètres on doit déselectionner
-tous les points (`click droit`).
+Sur l'application Tkinter on peut choisir (`click gauche`) autant des points de controle que on veut. Cependant pour avoir accés à certains paramètres on doit déselectionner tous les points (`click droit`).
 
 ## Cahier des charges
 - [x] codage, sauvegarde et chargement d’une matrice à valeurs entières, 
@@ -57,7 +55,7 @@ Vous pouvez afficher le chemin pendant l'animation en appuyant sur `d`(draw path
 ### Tests unitaires
 Les tests unitaires se situent dans le dossier `./tests` avec les benchmarks il
 néanmoins parfois nécessaire d'attendre un temps important, la génération de
-grid etant aleatoire
+grid étant aléatoire.
 
 ### PS
 Les retours ainsi que les points à améliorer sur le projet serait appreciés.
