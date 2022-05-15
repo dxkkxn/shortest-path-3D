@@ -171,7 +171,6 @@ class AppController():
         # update path
         p = self.path
         self.path = self.compute_path()
-        print(p == self.path)
         self.draw_path()
         self.opengl.set_path(self.path)
         self.opengl.display_path = True
