@@ -49,7 +49,7 @@ seulement appuyez sur `u`(update) pour mettre à jour le chemin.
 Vous pouvez afficher le chemin pendant l'animation en appuyant sur `d`(draw path).
 
 ### Tests unitaires
-Les tests unitaires se situe dans le dossier `./tests` avec les benchmarks
+Les tests unitaires se situent dans le dossier `./tests` avec les benchmarks.
 
 ### PS
 Les retours ainsi que les points à améliorer sur le projet serait appreciés.
