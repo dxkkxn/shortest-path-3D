@@ -40,6 +40,9 @@ Appuyez sur `n` pour afficher/cacher les normales.
 Vous pouvez changer entre deux dimensions et trois dimensions appuyant sur `3`
 Vous pouvez changer entre les dimension même lors de l'animation, 
 seulement appuyez sur `u`(uptate) pour mettre à jour le chemin.
+Vous pouvez afficher le chemin pendant l'animation en appuyant sur `d`(draw path).
+Pour les mouvements de caméra on vous recommande de appuyer sur `g` pour afficher
+le repère du plan
 
 S'il vous plait envoyez vos retours sur ce projet et les points à 
 améliorer qu'on n'est pas à courir après vous pour les retours comme le

@@ -200,6 +200,7 @@ class AppController():
 
     def animate(self, event=None):
         """Strats the animation in the opengl window."""
+        self.opengl.display_path = False
         self.opengl.start_animation()
 
     def resize(self, event=None):

@@ -57,6 +57,7 @@ class Render3D(object):
         self.water.set_size(len(grid)*2)
         self.x_look_at = x
         self.z_look_at = x
+        self.x_cam, self.y_cam, self.z_cam = x-1, 15, x * 2
 
     def set_water_height(self, x):
         self.water.y = x
@@ -721,6 +722,8 @@ class Render3D(object):
             self.display_grid_toggle = not self.display_grid_toggle
         elif key == b'3':
             self.three_d = not self.three_d
+            if not self.three_d:
+                self.set_2D()
         elif key == b'n':
             self.display_normals = not self.display_normals
             self.water.set_normals(self.display_normals)
@@ -747,7 +750,7 @@ class Render3D(object):
             self.x_look_at = x
             self.y_look_at = y
             self.z_look_at = z
-            self.x_cam, self.y_cam, self.z_cam = x, y + 4, z - 4
+            self.x_cam, self.y_cam, self.z_cam = x, y + 1, z - 2
             for i in range(len(self.path3D)):
                 glutTimerFunc(1000+(i*100), self.animate, None)
 
@@ -773,7 +776,7 @@ class Render3D(object):
         self.x_look_at = x
         self.y_look_at = y
         self.z_look_at = z
-        self.x_cam, self.y_cam, self.z_cam = x, y + 10, z + 2
+        self.x_cam, self.y_cam, self.z_cam = x, y + 8, z + 2
         for i in range(len(self.path3D)):
             glutTimerFunc(1000+(i*100), self.animate, None)
         print("finished")
@@ -794,7 +797,7 @@ class Render3D(object):
             self.x_look_at = len(self.grid)
             self.z_look_at = len(self.grid)
             x = len(self.grid)
-            self.x_cam, self.y_cam, self.z_cam = x-1, 15, x * 2
+            self.x_cam, self.y_cam, self.z_cam = x, 15, x * 2
             self.animation = False
         self.move_worm += 1
 
