@@ -10,6 +10,10 @@ Il est conseillé d'avoir les deux fênetres cote à cote car tous les
 préférences que vous chosirez sur l'application 2D se mettront à jour
 automatiquement sur l'application 3D.
 
+Sur l'application tkinter on peut choisir `(click gauche`) autant des points de controle que
+vous voulez. Pour avoir accés à certains paramètres on doit déselectionner
+tous les points (`click droit`).
+
 ## Cahier des charges
 - [x] codage, sauvegarde et chargement d’une matrice à valeurs entières, 
 - [x] choix d’un point de départ et d’un point d’arrivée, application des algorithmes de Dijkstra et A* et mémorisation des résultats,
